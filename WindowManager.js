@@ -2,8 +2,7 @@ var Alloy = require('alloy'),
 	_ = Alloy._,
 	Backbone = Alloy.Backbone;
 
-var WM;
-module.exports = WM = {
+var WM = module.exports = {
 	navWindows: [],
 
 	/**
@@ -12,7 +11,7 @@ module.exports = WM = {
 	 * @param {Ti.UI.Window} win Window to open in NavigationWindow
 	 * @return {Ti.UI.iOS.NavigationWindow} created navigationWindow
 	 */
-	openWinInNewNavWindow: function(win) {
+	createNewNavWindow: function(win) {
 		if (OS_IOS) {
 			var navWindow = Ti.UI.iOS.createNavigationWindow({
 				backgroundColor: '#fff',
@@ -34,7 +33,7 @@ module.exports = WM = {
 	openWinInActiveNavWindow: function(win) {
 		if (OS_IOS) {
 			if (!WM.navWindows.length) {
-				var navWin = WM.openWinInNewNavWindow(win);
+				var navWin = WM.createNewNavWindow(win);
 				navWin.open();
 			} else
 				_.last(WM.navWindows).openWindow(win);
@@ -48,9 +47,6 @@ module.exports = WM = {
 	 * @param {Ti.UI.Window} win Window to open
 	 */
 	openWin: function(win) {
-		// Do some cleanup on close
-		// win.addEventListener('close', onWinClose);
-
 		if (win.createStack) {
 			addWinToStack(win.createStack, win);
 		} else if (win.addToStack) {
@@ -75,7 +71,7 @@ module.exports = WM = {
 				// Create SideMenu if not yet created. 
 				// Else replace current centerWindow with this Window
 				setupNavDrawer({
-					centerWin: WM.openWinInNewNavWindow(win)
+					centerWin: WM.createNewNavWindow(win)
 				});
 			}
 			// If window should be part of NavigationGroup 
@@ -85,7 +81,7 @@ module.exports = WM = {
 			// If window should be Modal Window
 			// Also add it to a new navigationGroup
 			else if (win.modalWin) {
-				var navWin = WM.openWinInNewNavWindow(win);
+				var navWin = WM.createNewNavWindow(win);
 				navWin.open({
 					modal: true
 				});
@@ -119,9 +115,12 @@ module.exports = WM = {
 	closeWin: function(win) {
 		if (win.window) {
 			win.window.fireEvent('close');
-			win.window.leftNavButton.removeEventListener('click', WM.toggleLeftNavDrawer);
+
+			if (win.window.leftNavButton)
+				win.window.leftNavButton.removeEventListener('click', WM.toggleLeftNavDrawer);
 
 			win.window = null;
+
 			WM.navWindows.pop();
 		}
 
@@ -150,7 +149,7 @@ module.exports = WM = {
 	killStack: function(name) {
 		if (_windowStacks[name])
 			_.each(_windowStacks[name], function(win) {
-				win.close();
+				WM.closeWin(win);
 			});
 	}
 
@@ -163,6 +162,7 @@ _windowStacks = {};
 
 /**
  * Add given Window to stack with given name
+ * @private
  *
  * @param {String} name Stack to add given Window to
  * @param {Ti.UI.Window} win Window to add
@@ -178,6 +178,7 @@ if (OS_ANDROID) {
 
 	/**
 	 * On Android: Handle open event of Sub window. It adds the Android backbutton and closes it on click
+	 * @private
 	 *
 	 * @param {Object} evt Event details
 	 */
@@ -203,6 +204,7 @@ if (OS_ANDROID) {
 
 	/**
 	 * On Android: Handle open event of Top window. It opens the NavigationDrawer
+	 * @private
 	 *
 	 * @param {Object} evt Event details
 	 */
@@ -321,6 +323,7 @@ if (OS_ANDROID)
 
 /**
  * Setup Navigation Drawer module
+ * @private
  *
  * @param {Object} config Configuration for module
  */
