@@ -58,7 +58,6 @@ module.exports = WM = {
 		}
 
 		if (OS_IOS) {
-			Ti.API.info(win.navGroup + ' && ' + win.modal);
 			// Sometimes we accidentally set modal and navGroup to true.
 			// In that case 'modal' should be preferred, because modal windows are always opened in a new NavWindow
 			if (win.navGroup && win.modalWin)
@@ -185,12 +184,10 @@ if (OS_ANDROID) {
 	function onOpenSubWindow(evt) {
 		var win = this;
 
-		if (!win.activity) {
-			Ti.API.error("Can't access action bar on a lightweight window.");
-		} else {
+		if (this.activity) {
 			//Setup the ActionBar for 1> level windows
-			var actionBar = win.activity.actionBar;
-			if (actionBar && !win.navBarHidden) {
+			var actionBar = this.activity.actionBar;
+			if (actionBar && !this.navBarHidden) {
 				actionBar.displayHomeAsUp = true;
 				actionBar.icon = '/images/generic/logoTransparentSmall.png';
 				actionBar.onHomeIconItemSelected = function() {
@@ -200,7 +197,7 @@ if (OS_ANDROID) {
 
 			this.activity.onPrepareOptionsMenu = createOptionsMenu;
 
-			win.activity.invalidateOptionsMenu();
+			this.activity.invalidateOptionsMenu();
 		}
 	}
 
@@ -218,8 +215,6 @@ if (OS_ANDROID) {
 				actionBar.icon = '/images/generic/hamburger.png';
 
 				actionBar.onHomeIconItemSelected = function() {
-					Ti.API.info('Opening Android NavDrawer');
-
 					if (_navDrawerAndroid) {
 						_navDrawerAndroid.toggleDrawer();
 					}
@@ -296,7 +291,7 @@ if (OS_ANDROID) {
 			emailDialog = Ti.UI.createEmailDialog();
 
 		emailDialog.subject = "I could use some help!";
-		emailDialog.toRecipients = ['support@collap.tv'];
+		emailDialog.toRecipients = [Alloy.CFG.supportEmail];
 
 		var message = "\n\r\n\r\n\r --- \n\r";
 
@@ -320,7 +315,9 @@ if (OS_ANDROID) {
  * @private
  */
 _navDrawer = null;
-_centerWin = null;
+
+if (OS_ANDROID)
+	_centerWin = null;
 
 /**
  * Setup Navigation Drawer module
