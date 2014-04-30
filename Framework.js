@@ -1,49 +1,45 @@
 var Alloy = require('alloy'),
 	_ = Alloy._,
-	Backbone = Alloy.Backbone,
-	WM = require('RebelFrame/WindowManager');
+	Backbone = Alloy.Backbone;
 
 /**
  * @class Framework
- * Framework general functions, defined as singleton
+ * @singleton
+ *
+ * RebelFrame's general functions, defined as singleton
  */
-var Framework = {
+var Framework = module.exports = {
 	/**
-	 * {String} LOGGEDOUT User has installed App, but not yet loggedin
+	 * @property {String} LOGGEDOUT User has installed App, but not yet loggedin
 	 */
 	LOGGEDOUT: 'loggedout',
 	/**
-	 * {String} LOGGEDOUT User is loggedin, but has not yet activated
+	 * @property {String} LOGGEDOUT User is loggedin, but has not yet activated
 	 */
 	LOGGEDIN: 'loggedin',
 	/**
-	 * {String} ACTIVATED User is loggedin, activated and ready to use all the features
+	 * @property {String} ACTIVATED User is loggedin, activated and ready to use all the features
 	 */
 	ACTIVATED: 'activated',
 
 	/**
-	 * @property {Int} deviceWidth Width of the device in dip. We need to devide by the logicalDensityFactor on Android to get the dip
+	 * @property {Number} deviceWidth Width of the device in dip. We need to devide by the logicalDensityFactor on Android to get the dip
 	 */
 	deviceWidth: OS_IOS ? Ti.Platform.displayCaps.platformWidth : Ti.Platform.displayCaps.platformWidth / Ti.Platform.displayCaps.logicalDensityFactor,
 
 	/**
-	 * @property {Int} deviceHeight Height of the device in dip. We need to devide by the logicalDensityFactor on Android to get the dip
+	 * @property {Number} deviceHeight Height of the device in dip. We need to devide by the logicalDensityFactor on Android to get the dip
 	 */
 	deviceHeight: OS_IOS ? Ti.Platform.displayCaps.platformHeight : Ti.Platform.displayCaps.platformHeight / Ti.Platform.displayCaps.logicalDensityFactor,
 
 	/**
-	 * @property {Ti.UI.IOS.NavigationWindow} navWindows The active NavigationWindows
-	 */
-	navWindows: [],
-
-	/**
 	 * Sets the status of this app
 	 *
-	 * @param {String} status The status
+	 * @param {String} status The status to set
 	 */
 	setStatus: function(status) {
 		_status = status;
-		Ti.App.Properties.setString('F.status', status);
+		Ti.App.Properties.setString(Ti.App.id + '.status', status);
 	},
 
 	/**
@@ -55,23 +51,117 @@ var Framework = {
 		if (_status)
 			return _status;
 
-		return Ti.App.Properties.getString('F.status', Framework.LOGGEDOUT);
+		return Ti.App.Properties.getString(Ti.App.id + '.status', Framework.LOGGEDOUT);
 	},
 
 	/**
-	 * Open the given Window
-	 *
-	 * On iOS this Window is added to the NavigationGroup controller
-	 * On Android this Window is configured with a Actionbar and given an exitOnClose if needed
-	 *
-	 * @param {Ti.UI.Window} win Window to open
+	 * Extend Alloy's createController en createWidget functions to call construct function when controller is initialized.
 	 */
-	openWin: function(win) {
-		WM.openWin(win);
-	},
+	extendAlloy: function() {
+		// Wrap some Alloy functions, so they call construct and destruct methods.
+		var _alloy_createController = Alloy.createController,
+			_alloy_createModel = Alloy.createModel,
+			_alloy_createCollection = Alloy.createCollection,
+			_alloy_createWidget = Alloy.createWidget,
+			WM = require('RebelFrame/WindowManager');
 
-	closeWin: function(win) {
-		WM.closeWin(win);
+		/**
+		 * Adds openWin en closeWin functions to Alloy Controllers. This way it is easy to call $.openWin() and $.closeWin and are needed close eventlisteners automatically added and removed.
+		 *
+		 * @param {Alloy.Controller} controller Controller to add the functions to
+		 */
+		var addFunctions = function(controller, config) {
+			controller.openWin = function(win) {
+				win = win || controller.getView();
+
+				if (!_.isUndefined(config.showSideMenu))
+					win.showSideMenu = config.showSideMenu;
+
+				// Open the window
+				WM.openWin(win);
+
+				/**
+				 * Handle `close` event of Window. Removes eventlistener and calls both RebelFrame's destruct as Alloy's destroy functions.
+				 *
+				 * @param  {Object} evt Event details
+				 */
+				function onCloseWin(evt) {
+					this.removeEventListener('close', onCloseWin);
+
+					if (controller.destruct) {
+						Ti.API.debug('destruct() called');
+						controller.destruct.call(controller, evt);
+					} else
+						Ti.API.warn('destruct() NOT called');
+
+					controller.destroy.call(controller, evt);
+
+					// Cleanup possible panning:
+					evt.source.keyboardPanning = false;
+				}
+
+				win.addEventListener('close', onCloseWin);
+			};
+
+			/**
+			 * Close the Window
+			 *
+			 * @param  {Ti.UI.Window} [win] Window to close. If not provided, the Controller's top level view is used.
+			 */
+			controller.closeWin = function(win) {
+				win = win || controller.getView();
+
+				WM.closeWin(win);
+			};
+		};
+
+		/**
+		 * Call original Alloy.createController function and then construct is it exists. Also track this new screen in Google Analytics
+		 *
+		 * @param  {String} name Controller name
+		 * @param  {Object} config Controller configuration
+		 */
+		Alloy.createController = function(name, config) {
+			config = config || {};
+
+			var controller = _alloy_createController(name, config);
+
+			addFunctions(controller, config);
+
+			if (controller.construct)
+				controller.construct.call(controller, config || {});
+
+			// Track screen
+			if (name !== 'index')
+				tracker.trackScreen(name);
+
+			return controller;
+		};
+
+		/**
+		 * Call original Alloy.createWidget function and then construct is it exists. Also track this new screen in Google Analytics
+		 *
+		 * @param  {String} name Controller name
+		 * @param  {Object} config Controller configuration
+		 */
+		Alloy.createWidget = function(name, controller, config) {
+			config = config || {};
+
+			var widget = _alloy_createWidget(name, controller, config);
+
+			// Also support name, config as arguments, leaving out controller, but do this only after calling the original method.
+			// Copied from Alloy.js definition
+			if ("undefined" != typeof controller && null !== controller && _.isObject(controller) && !_.isString(controller)) {
+				config = controller;
+			}
+
+			if (widget.construct)
+				widget.construct.call(widget, config || {});
+
+			addFunctions(widget, config);
+
+			return widget;
+		};
 	},
 
 	/**
@@ -98,12 +188,9 @@ var Framework = {
 
 /**
  * {String} The status of this app (i.e. loggedout, loggedin, activated)
- *
  * @private
  */
 var _status;
-
-module.exports = Framework;
 
 // Create some basic globals that can be used in TSS
 Alloy.Globals.screenHeight = Framework.deviceHeight - 64;
