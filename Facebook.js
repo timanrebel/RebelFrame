@@ -5,22 +5,14 @@ var Alloy = require('alloy'),
 	Acl = require('RebelFrame/Acl');
 
 /**
- * This has to be called FB and not Facebook because it otherwise poses problems with the facebook module which is also loaded via require(facebook)
- */
-
-/**
  * Facebook provides a wrapper for the Facebook SDK and Ti Facebook module.
  *
- * @class FB
+ * @class Facebook
  * @singleton
  */
 var FB = {
-	appId: '178249809043514',
-
-	permissions: {
-		read: ['user_about_me', 'email'],
-		write: ['publish_actions']
-	},
+	appId: Alloy.CFG.facebook.appId,
+	permissions: Alloy.CFG.facebook.permissions,
 
 	login: function(options) {
 		// Wrap the success function
