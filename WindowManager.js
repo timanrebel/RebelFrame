@@ -9,7 +9,8 @@ var WM = module.exports = {
 	 * Open given Window in a new Ti.UI.iOS.NavigationWindow on iOS and return it. Do nothing on other platforms
 	 *
 	 * @param {Ti.UI.Window} win Window to open in NavigationWindow
-	 * @return {Ti.UI.iOS.NavigationWindow} created navigationWindow
+	 *
+	 * @return {Ti.UI.iOS.NavigationWindow} Created NavigationWindow
 	 */
 	createNewNavWindow: function(win) {
 		if (OS_IOS) {
@@ -18,7 +19,12 @@ var WM = module.exports = {
 
 				window: win
 			});
+			navWindow.id = 'navWindow_' + _.uniqueId();
+
 			WM.navWindows.push(navWindow);
+
+			// Store reference in the root Window to the NavigationWindow
+			win.navWin = navWindow;
 
 			return navWindow;
 		} else
@@ -32,10 +38,9 @@ var WM = module.exports = {
 	 */
 	openWinInActiveNavWindow: function(win) {
 		if (OS_IOS) {
-			if (!WM.navWindows.length) {
-				var navWin = WM.createNewNavWindow(win);
-				navWin.open();
-			} else
+			if (!WM.navWindows.length)
+				WM.createNewNavWindow(win).open();
+			else
 				_.last(WM.navWindows).openWindow(win);
 		} else
 			win.open();
@@ -74,10 +79,6 @@ var WM = module.exports = {
 					centerWin: WM.createNewNavWindow(win)
 				});
 			}
-			// If window should be part of NavigationGroup 
-			else if (win.navGroup) {
-				WM.openWinInActiveNavWindow(win);
-			}
 			// If window should be Modal Window
 			// Also add it to a new navigationGroup
 			else if (win.modalWin) {
@@ -85,8 +86,10 @@ var WM = module.exports = {
 				navWin.open({
 					modal: true
 				});
-
-				win.navWin = navWin;
+			}
+			// If window should be part of NavigationGroup 
+			else if (win.navGroup) {
+				WM.openWinInActiveNavWindow(win);
 			}
 			// Else, just open the Window
 			else
@@ -113,22 +116,27 @@ var WM = module.exports = {
 	 * @param {Ti.UI.Window} win Window to close
 	 */
 	closeWin: function(win) {
-		if (win.window) {
-			win.window.fireEvent('close');
+		if (OS_IOS) {
+			// If Window is a NavigationWindow, clean up root Window as well
+			if (win.window) {
+				win.window.fireEvent('close');
 
-			if (win.window.leftNavButton)
-				win.window.leftNavButton.removeEventListener('click', WM.toggleLeftNavDrawer);
+				if (win.window.leftNavButton)
+					win.window.leftNavButton.removeEventListener('click', WM.toggleLeftNavDrawer);
 
-			win.window = null;
+				win.window = null;
 
-			WM.navWindows.pop();
-		}
+				WM.navWindows.pop();
+			}
 
-		if (win.navWin) {
-			var navWin = win.navWin;
-			win.navWin = null;
+			// If Window is a root Window of a NavigationWindow, close the NavigationWindow instead
+			if (win.navWin) {
+				var navWin = win.navWin;
+				win.navWin = null;
 
-			WM.closeWin(navWin);
+				WM.closeWin(navWin);
+			} else
+				win.close();
 		} else
 			win.close();
 	},
