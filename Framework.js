@@ -71,48 +71,56 @@ var Framework = module.exports = {
 		 * @param {Alloy.Controller} controller Controller to add the functions to
 		 */
 		var addFunctions = function(controller, config) {
-			controller.openWin = function(win) {
-				win = win || controller.getView();
 
-				if (!_.isUndefined(config.showSideMenu))
-					win.showSideMenu = config.showSideMenu;
+			_.extend(controller, {
+				/**
+				 * Opens the Window. Also adds a `clse` eventListener, to clean up the controller when the Window is closed.
+				 *
+				 * @param  {Ti.UI.Window} [win] Window to open. If not provided, the Controller's top level view is used.
+				 */
+				openWin: function(win) {
+					win = win || controller.getView();
 
-				// Open the window
-				WM.openWin(win);
+					if (!_.isUndefined(config.showSideMenu))
+						win.showSideMenu = config.showSideMenu;
+
+					// Open the window
+					WM.openWin(win);
+
+					/**
+					 * Handle `close` event of Window. Removes eventlistener and calls both RebelFrame's destruct as Alloy's destroy functions.
+					 *
+					 * @param  {Object} evt Event details
+					 */
+					function onCloseWin(evt) {
+						this.removeEventListener('close', onCloseWin);
+
+						if (controller.destruct) {
+							Ti.API.debug('destruct() called');
+							controller.destruct.call(controller, evt);
+						} else
+							Ti.API.warn('destruct() NOT called');
+
+						controller.destroy.call(controller, evt);
+
+						// Cleanup possible panning:
+						evt.source.keyboardPanning = false;
+					}
+
+					win.addEventListener('close', onCloseWin);
+				},
 
 				/**
-				 * Handle `close` event of Window. Removes eventlistener and calls both RebelFrame's destruct as Alloy's destroy functions.
+				 * Close the Window
 				 *
-				 * @param  {Object} evt Event details
+				 * @param  {Ti.UI.Window} [win] Window to close. If not provided, the Controller's top level view is used.
 				 */
-				function onCloseWin(evt) {
-					this.removeEventListener('close', onCloseWin);
+				closeWin: function(win) {
+					win = win || controller.getView();
 
-					if (controller.destruct) {
-						Ti.API.debug('destruct() called');
-						controller.destruct.call(controller, evt);
-					} else
-						Ti.API.warn('destruct() NOT called');
-
-					controller.destroy.call(controller, evt);
-
-					// Cleanup possible panning:
-					evt.source.keyboardPanning = false;
+					WM.closeWin(win);
 				}
-
-				win.addEventListener('close', onCloseWin);
-			};
-
-			/**
-			 * Close the Window
-			 *
-			 * @param  {Ti.UI.Window} [win] Window to close. If not provided, the Controller's top level view is used.
-			 */
-			controller.closeWin = function(win) {
-				win = win || controller.getView();
-
-				WM.closeWin(win);
-			};
+			});
 		};
 
 		/**
@@ -120,14 +128,19 @@ var Framework = module.exports = {
 		 *
 		 * @param  {String} name Controller name
 		 * @param  {Object} config Controller configuration
+		 *
+		 * @return {Alloy.controller} Created controller, extended with RebelFrame fucntions
 		 */
 		Alloy.createController = function(name, config) {
 			config = config || {};
 
+			// Create controller using Alloy's original function
 			var controller = _alloy_createController(name, config);
 
+			// Add custom RebelFrame functions to controller
 			addFunctions(controller, config);
 
+			// Call constructor, if exists
 			if (controller.construct)
 				controller.construct.call(controller, config || {});
 
@@ -143,10 +156,13 @@ var Framework = module.exports = {
 		 *
 		 * @param  {String} name Controller name
 		 * @param  {Object} config Controller configuration
+		 *
+		 * @return {Alloy.controller} Created controller, extended with RebelFrame fucntions
 		 */
 		Alloy.createWidget = function(name, controller, config) {
 			config = config || {};
 
+			// Create controller using Alloy's original function
 			var widget = _alloy_createWidget(name, controller, config);
 
 			// Also support name, config as arguments, leaving out controller, but do this only after calling the original method.
@@ -155,10 +171,12 @@ var Framework = module.exports = {
 				config = controller;
 			}
 
+			// Add custom RebelFrame functions to controller
+			addFunctions(widget, config);
+
+			// Call constructor, if exists
 			if (widget.construct)
 				widget.construct.call(widget, config || {});
-
-			addFunctions(widget, config);
 
 			return widget;
 		};
