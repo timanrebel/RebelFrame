@@ -1,5 +1,5 @@
 var Alloy = require('alloy'),
-	_ = Alloy._, 
+	_ = Alloy._,
 	Backbone = Alloy.Backbone,
 	GA = require('com.animecyc.analytics');
 
@@ -8,8 +8,9 @@ GA.debug = false;
 GA.trackUncaughtExceptions = true;
 
 var GoogleTracker = GA.getTracker(Alloy.CFG.gaTrackingID);
-GoogleTracker.setSessionTimeout(30*60);
-if(OS_IOS)
+GoogleTracker.setSessionTimeout(30 * 60);
+
+if (OS_IOS)
 	GoogleTracker.setTrackUncaughtExceptions(true);
 
 module.exports = {
@@ -17,7 +18,7 @@ module.exports = {
 	 * Track a screen
 	 *
 	 * @param  {String} name The name of the application screen.
-	 * 
+	 *
 	 */
 	trackScreen: function(name) {
 		GoogleTracker.trackScreen(name);
@@ -37,7 +38,7 @@ module.exports = {
 			action: action || '',
 			label: label || '',
 			value: value || 1
-		});	
+		});
 	},
 
 	/**
