@@ -40,12 +40,6 @@ var Cloud = (function() {
 				// make sure we have a data object
 				config.data = config.data || {};
 
-				// Add version
-				config.data.version = Ti.App.version;
-
-				// Add Access token
-				config.data.access_token = require('Acl').cloudAccessToken;
-
 				// Prepare the data (if required)
 				var url = config.url,
 					method = config.method || 'GET',

@@ -67,7 +67,7 @@ var WM = module.exports = {
 			// Show SideMenu button and replace current centerWindow with this new Window
 			if (win.showSideMenu) {
 				// Show sideMenu button
-				var sideMenuButton = Alloy.createWidget('c.MenuBarButton', {
+				var sideMenuButton = Alloy.createWidget('rebel.MenuBarButton', {
 					buttonType: 'hamburger'
 				});
 				win.leftNavButton = sideMenuButton.getView();
