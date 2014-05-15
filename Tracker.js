@@ -1,18 +1,13 @@
 var Alloy = require('alloy'),
 	_ = Alloy._,
 	Backbone = Alloy.Backbone,
-	
-	GA = require('com.animecyc.analytics');
+	GA = require('analytics.google');
 
 //GA.optOut = true;
 GA.debug = false;
 GA.trackUncaughtExceptions = true;
 
 var GoogleTracker = GA.getTracker(Alloy.CFG.gaTrackingID);
-GoogleTracker.setSessionTimeout(30 * 60);
-
-if (OS_IOS)
-	GoogleTracker.setTrackUncaughtExceptions(true);
 
 module.exports = {
 	/**
@@ -35,7 +30,7 @@ module.exports = {
 	 */
 	trackEvent: function(category, action, label, value) {
 		GoogleTracker.trackEvent({
-			event: category,
+			category: category,
 			action: action || '',
 			label: label || '',
 			value: value || 1
@@ -51,7 +46,7 @@ module.exports = {
 	 */
 	trackSocial: function(platform, action, target) {
 		GoogleTracker.trackSocial({
-			social: platform,
+			network: platform,
 			action: action,
 			target: target || ''
 		});
@@ -68,7 +63,7 @@ module.exports = {
 	trackLoadingTime: function(category, interval) {
 		GoogleTracker.trackTime({
 			category: category,
-			interval: interval || 0
+			time: interval || 0
 		});
 	},
 
