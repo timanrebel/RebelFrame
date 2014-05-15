@@ -38,8 +38,12 @@ var WM = module.exports = {
 	 */
 	openWinInActiveNavWindow: function(win) {
 		if (OS_IOS) {
-			if (!WM.navWindows.length)
-				WM.createNewNavWindow(win).open();
+			if (!WM.navWindows.length) {
+				if(Alloy.Globals.tabGroup)
+					Alloy.Globals.tabGroup.activeTab.open(win);
+				else
+					WM.createNewNavWindow(win).open();
+			}
 			else
 				_.last(WM.navWindows).openWindow(win);
 		} else
@@ -73,7 +77,7 @@ var WM = module.exports = {
 				win.leftNavButton = sideMenuButton.getView();
 				sideMenuButton.on('click', WM.toggleLeftNavDrawer);
 
-				// Create SideMenu if not yet created. 
+				// Create SideMenu if not yet created.
 				// Else replace current centerWindow with this Window
 				setupNavDrawer({
 					centerWin: WM.createNewNavWindow(win)
@@ -87,7 +91,7 @@ var WM = module.exports = {
 					modal: true
 				});
 			}
-			// If window should be part of NavigationGroup 
+			// If window should be part of NavigationGroup
 			else if (win.navGroup) {
 				WM.openWinInActiveNavWindow(win);
 			}
@@ -96,7 +100,7 @@ var WM = module.exports = {
 				win.open();
 		} else if (OS_ANDROID) {
 			if (win.showSideMenu) {
-				// Create SideMenu if not yet created. 
+				// Create SideMenu if not yet created.
 				setupNavDrawer({
 					centerWin: win
 				});
@@ -112,7 +116,7 @@ var WM = module.exports = {
 
 	/**
 	 * Close the given Window
-	 
+
 	 * @param {Ti.UI.Window} win Window to close
 	 */
 	closeWin: function(win) {
