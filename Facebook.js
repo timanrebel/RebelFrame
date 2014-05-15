@@ -1,6 +1,7 @@
 var Alloy = require('alloy'),
 	_ = Alloy._,
 	Backbone = Alloy.Backbone,
+	
 	fbSDK = require('facebook'),
 	Acl = require('RebelFrame/Acl');
 
