@@ -81,8 +81,12 @@ var Framework = module.exports = {
 				openWin: function(win) {
 					win = win || controller.getView();
 
+					// When Controller is 'root' Window and should show hamburger, make it so
 					if (!_.isUndefined(config.showSideMenu))
 						win.showSideMenu = config.showSideMenu;
+					// When Controller is opened from the XML of a TabGroup, do nothing
+					else if (!_.isUndefined(config.tabGroup))
+						return;
 
 					// Open the window
 					WM.openWin(win);
