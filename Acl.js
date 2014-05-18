@@ -84,8 +84,12 @@ var Acl = {
 	getLoggedinUser: function() {
 		if (!Acl.user) {
 			Acl.user = Alloy.createModel('User', {
-				id: Ti.App.Properties.getString('loggedinUserId')
+				objectId: Ti.App.Properties.getString('loggedinUserId')
 			});
+            Acl.user.set(Ti.App.Properties.getObject('loggedinUser', {}));
+            Acl.user.on('change', function(model) {
+                Ti.App.Properties.setObject('loggedinUser', model.attributes);
+            });
 			Acl.user.fetch();
 		}
 		return Acl.user;
@@ -96,12 +100,13 @@ var Acl = {
 	 * @param {Sc.model.UserLoggedIn} user User to set as loggedin User
 	 */
 	setLoggedinUser: function(user) {
-		Acl.user = user;
+        if(Acl.user)
+            Acl.user.off();
 
-		// Update cache
-		// Acl.user.save(null, {
-		// 	target: 'cache'
-		// });
+		Acl.user = user;
+        Acl.user.on('change', function(model) {
+            Ti.App.Properties.setObject('loggedinUser', model.attributes);
+        });
 
 		Acl.setIsLoggedin(user);
 	},
