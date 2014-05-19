@@ -23,7 +23,7 @@ var PN = {
 				callback: onNewNotification
 			});
 
-			// Second, check for existing Push Notifications 
+			// Second, check for existing Push Notifications
 			checkForPushNotifications();
 
 			// Third, check for Push Notifications when coming back from background
@@ -34,7 +34,7 @@ var PN = {
 
 			if (gcmModule.data && gcmModule.data !== null) {
 				// if we're here is because user has clicked on the notification
-				// and we set extras for the intent 
+				// and we set extras for the intent
 				// and the app WAS NOT running
 				// (don't worry, we'll see more of this later)
 				onNewNotification(gcmModule.data);
@@ -62,6 +62,8 @@ var PN = {
 	}
 };
 
+_.extend(PN, Backbone.Events);
+
 var _callback;
 
 var _pushRegistration = Alloy.createModel('PushRegistration');
@@ -69,6 +71,8 @@ var _pushRegistration = Alloy.createModel('PushRegistration');
 function onNewNotification(evt) {
 	Ti.API.info('Incoming push notification:');
 	Ti.API.info(evt);
+
+	PN.trigger('push', evt);
 }
 
 /**
