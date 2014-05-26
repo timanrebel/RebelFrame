@@ -66,7 +66,7 @@ _.extend(PN, Backbone.Events);
 
 var _callback;
 
-var _pushRegistration = Alloy.createModel('PushRegistration');
+// var _pushRegistration = Alloy.createModel('PushRegistration');
 
 function onNewNotification(evt) {
 	Ti.API.info('Incoming push notification:');

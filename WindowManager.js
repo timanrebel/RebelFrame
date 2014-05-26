@@ -139,7 +139,9 @@ var WM = module.exports = {
 				win.navWin = null;
 
 				WM.closeWin(navWin);
-			} else
+			} else if(Alloy.Globals.tabGroup)
+				Alloy.Globals.tabGroup.close(win);
+			else
 				win.close();
 		} else
 			win.close();

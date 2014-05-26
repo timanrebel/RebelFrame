@@ -215,5 +215,6 @@ var Framework = module.exports = {
 var _status;
 
 // Create some basic globals that can be used in TSS
+Alloy.Globals.deviceHeight = Framework.deviceHeight;
 Alloy.Globals.screenHeight = Framework.deviceHeight - 64;
 Alloy.Globals.screenWidth = Framework.deviceWidth;
