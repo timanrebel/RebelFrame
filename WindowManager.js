@@ -72,7 +72,8 @@ var WM = module.exports = {
 			if (win.showSideMenu) {
 				// Show sideMenu button
 				var sideMenuButton = Alloy.createWidget('rebel.MenuBarButton', {
-					buttonType: 'hamburger'
+					buttonType: 'hamburger',
+					delay: 200
 				});
 				win.leftNavButton = sideMenuButton.getView();
 				sideMenuButton.on('click', WM.toggleLeftNavDrawer);
@@ -168,6 +169,8 @@ var WM = module.exports = {
 	}
 
 };
+
+_.extend(WM, Backbone.Events);
 
 /**
  * @property {Object} _windowStacks Dictionary of stacks of Windows. Each element contains an array of one or more windows
