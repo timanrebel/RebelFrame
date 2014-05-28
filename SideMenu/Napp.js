@@ -9,7 +9,7 @@ var Napp = module.exports = {
 		_centerWin = config.centerWin;
 		var leftWin = Ti.UI.createWindow();
 
-		leftWin.add(Alloy.createWidget(Alloy.CFG.sideMenuWidget).getView());
+		leftWin.add(Alloy.createWidget(Alloy.CFG.SideMenu.menuWidget).getView());
 
 		_navDrawer = _navDrawerModule.createDrawer({
 			// set windows

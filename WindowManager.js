@@ -71,7 +71,7 @@ var WM = module.exports = {
 			// Show SideMenu button and replace current centerWindow with this new Window
 			if (win.showSideMenu) {
 				// Show sideMenu button
-				var sideMenuButton = Alloy.createWidget('rebel.MenuBarButton', {
+				var sideMenuButton = Alloy.createWidget(Alloy.CFG.SideMenu.buttonWidget || 'rebel.MenuBarButton', {
 					buttonType: 'hamburger',
 					delay: 200
 				});
@@ -348,7 +348,7 @@ function setupNavDrawer(config) {
 	// Setup NavDrawer module on iOS
 	if (OS_IOS) {
 		if (!_navDrawer) {
-			_navDrawer = require('RebelFrame/SideMenu/' + Alloy.CFG.sideMenuType);
+			_navDrawer = require('RebelFrame/SideMenu/' + Alloy.CFG.SideMenu.type);
 			_navDrawer.setup(config);
 
 			_navDrawer.on('open', onNavBarOpen);
