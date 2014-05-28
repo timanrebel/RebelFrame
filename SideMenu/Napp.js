@@ -8,7 +8,6 @@ var Napp = module.exports = {
 	setup: function(config) {
 		_centerWin = config.centerWin;
 		var leftWin = Ti.UI.createWindow();
-		Ti.API.info(Alloy.CFG.sideMenuWidget);
 
 		leftWin.add(Alloy.createWidget(Alloy.CFG.sideMenuWidget).getView());
 
