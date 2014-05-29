@@ -132,11 +132,10 @@ var WM = module.exports = {
 
 				WM.navWindows.pop();
 			}
-
 			// If Window is a root Window of a NavigationWindow, close the NavigationWindow instead
-			if (win.navWin) {
+			else if (win.navWin) {
 				var navWin = win.navWin;
-				win.navWin = null;
+				delete win.navWin;
 
 				WM.closeWin(navWin);
 			} else if(Alloy.Globals.tabGroup)
