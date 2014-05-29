@@ -71,8 +71,9 @@ var WM = module.exports = {
 			// Show SideMenu button and replace current centerWindow with this new Window
 			if (win.showSideMenu) {
 				// Show sideMenu button
-				var sideMenuButton = Alloy.createWidget('rebel.MenuBarButton', {
-					buttonType: 'hamburger'
+				var sideMenuButton = Alloy.createWidget(Alloy.CFG.SideMenu.buttonWidget || 'rebel.MenuBarButton', {
+					buttonType: 'hamburger',
+					delay: 200
 				});
 				win.leftNavButton = sideMenuButton.getView();
 				sideMenuButton.on('click', WM.toggleLeftNavDrawer);
@@ -167,6 +168,8 @@ var WM = module.exports = {
 	}
 
 };
+
+_.extend(WM, Backbone.Events);
 
 /**
  * @property {Object} _windowStacks Dictionary of stacks of Windows. Each element contains an array of one or more windows
@@ -344,7 +347,7 @@ function setupNavDrawer(config) {
 	// Setup NavDrawer module on iOS
 	if (OS_IOS) {
 		if (!_navDrawer) {
-			_navDrawer = require('RebelFrame/SideMenu/' + Alloy.CFG.sideMenuType);
+			_navDrawer = require('RebelFrame/SideMenu/' + Alloy.CFG.SideMenu.type);
 			_navDrawer.setup(config);
 
 			_navDrawer.on('open', onNavBarOpen);
