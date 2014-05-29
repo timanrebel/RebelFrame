@@ -36,11 +36,6 @@ var Cloud = (function() {
 				// Create http client
 				this.httpClient = Ti.Network.createHTTPClient(clientConfig);
 
-				// Set headers
-				for (var key in config.headers) {
-					this.httpClient.setRequestHeader(key, config.headers[key]);
-				}
-
 				// make sure we have a data object
 				config.data = config.data || {};
 
@@ -63,6 +58,13 @@ var Cloud = (function() {
 
 				// Open connection
 				this.httpClient.open(method, url);
+
+				// Set headers after opening connection
+				for (var key in config.headers) {
+					this.httpClient.setRequestHeader(key, config.headers[key]);
+				}
+
+				Ti.API.info(config.headers);
 
 				this.httpClient.send(data);
 			},
