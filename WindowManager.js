@@ -132,6 +132,8 @@ var WM = module.exports = {
 				win.window = null;
 
 				WM.navWindows.pop();
+
+				win.close();
 			}
 			// If Window is a root Window of a NavigationWindow, close the NavigationWindow instead
 			else if (win.navWin) {
@@ -139,8 +141,10 @@ var WM = module.exports = {
 				delete win.navWin;
 
 				WM.closeWin(navWin);
+			// If Window is part of tabGroup, close via TabGroup
 			} else if(Alloy.Globals.tabGroup)
 				Alloy.Globals.tabGroup.close(win);
+			// Else just close the Window
 			else
 				win.close();
 		} else
