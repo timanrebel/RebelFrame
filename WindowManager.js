@@ -133,7 +133,7 @@ var WM = module.exports = {
 
 				// WM.navWindows.pop();
 				var index = WM.navWindows.indexOf(win);
-				
+
 				WM.navWindows.splice(index, 1);
 
 				win.close();
@@ -172,6 +172,11 @@ var WM = module.exports = {
 			_.each(_windowStacks[name], function(win) {
 				WM.closeWin(win);
 			});
+	},
+	destruct: function() {
+		_.each(WM.navWindows,function(win) {
+			WM.closeWin(win);
+		});
 	}
 
 };
