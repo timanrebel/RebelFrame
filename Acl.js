@@ -27,7 +27,6 @@ var Acl = {
 	 */
 	setCloudAccessToken: function(access_token) {
 		Acl.cloudAccessToken = access_token;
-		Cloud.accessToken = access_token;
 		Acl.storeCredentials(Ti.App.id, 'cloudAccessToken', access_token);
 	},
 
