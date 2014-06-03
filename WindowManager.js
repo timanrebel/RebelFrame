@@ -131,7 +131,10 @@ var WM = module.exports = {
 
 				win.window = null;
 
-				WM.navWindows.pop();
+				// WM.navWindows.pop();
+				var index = WM.navWindows.indexOf(win);
+				
+				WM.navWindows.splice(index, 1);
 
 				win.close();
 			}
