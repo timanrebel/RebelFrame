@@ -5,21 +5,68 @@ var Alloy = require('alloy'),
 
 var Android = module.exports = {
 	setup: function(config) {
+		Ti.API.info(config);
+
 		_centerWin = config.centerWin;
+
+		var _view = Ti.UI.createView({
+			layout: _centerWin.layout || 'absolute',
+			backgroundColor: _centerWin.backgroundColor,
+			backgroundGradient: _centerWin.backgroundGradient,
+			backgroundImage: _centerWin.backgroundImage
+		});
+
+		for(var i in _centerWin)
+			Ti.API.info(i);
+
+		_.each(_centerWin.children, function(view) {
+			_centerWin.remove(view);
+			_view.add(view);
+		})
 
 		_navDrawer = _navDrawerModule.createDrawer({
 			// set windows
 			leftView: Alloy.createWidget(Alloy.CFG.SideMenu.menuWidget).getView(),
-			centerView: config.centerWin,
+			centerView: _view, // Ti.UI.createView({backgroundColor: 'red'}),
 
 			// define widths
-			leftDrawerWidth: 240
+			leftDrawerWidth: 240,
+			width: Ti.UI.FILL,
+    		height: Ti.UI.FILL
 		});
 
 		_navDrawer.addEventListener('draweropen', onNavDrawerOpen);
 		_navDrawer.addEventListener('drawerclose', onNavDrawerClose);
 
-		_navDrawer.open();
+		var win = Ti.UI.createWindow({
+
+		});
+
+		_centerWin.add(_navDrawer);
+		_centerWin.addEventListener('open', function(evt) {
+			this.activity.actionBar.onHomeIconItemSelected = function() {
+				_navDrawer.toggleLeftWindow();
+			}
+		});
+		_centerWin.open();
+	},
+
+	attach: function(win) {
+		_centerWin.title = win.title;
+
+		var _view = Ti.UI.createView({
+			layout: win.layout || 'absolute',
+			backgroundColor: win.backgroundColor,
+			backgroundGradient: win.backgroundGradient,
+			backgroundImage: win.backgroundImage
+		});
+
+		_.each(win.children, function(view) {
+			win.remove(view);
+			_view.add(view);
+		});
+
+		_navDrawer.centerView = _view;
 	},
 
 	setCenterWindow: function(win) {
