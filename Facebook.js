@@ -107,10 +107,10 @@ function _authorize(options) {
 	fbSDK.addEventListener('login', callbackWrapper);
 	fbSDK.appid = FB.appId;
 
-	// if (OS_IOS)
-	// 	fbSDK.permissions = FB.permissions.read;
-	// else
-	// 	fbSDK.permissions = _.extend(FB.permissions.read, FB.permissions.write);
+	if (OS_IOS)
+		fbSDK.permissions = FB.permissions.read;
+	else
+		fbSDK.permissions = _.extend(FB.permissions.read, FB.permissions.write);
 
 	fbSDK.forceDialogAuth = false;
 
