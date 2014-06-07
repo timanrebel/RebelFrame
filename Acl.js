@@ -1,4 +1,5 @@
-var Alloy = require('alloy'),
+var F = require('RebelFrame/Framework'),
+    Alloy = require('alloy'),
     _ = Alloy._,
     Backbone = Alloy.Backbone;
 
@@ -170,11 +171,11 @@ var Acl = {
 		Acl.setCloudAccessToken(null);
 		// keychain.deletePasswordForService('Collapp', 'cloudAccessToken');
 
-		if (Acl.getLoggedinUser()) {
-			if (Acl.getLoggedinUser().hasSocialNetwork('facebook')) {
-				require('facebook').logout();
-			}
-		}
+		// if (Acl.getLoggedinUser()) {
+		// 	if (Acl.getLoggedinUser().hasSocialNetwork('facebook')) {
+		// 		require('facebook').logout();
+		// 	}
+		// }
 
 		// Unregister for push notifications
 		// PushNotifications.unRegister();
