@@ -1,7 +1,7 @@
 var Alloy = require('alloy'),
 	_ = Alloy._,
 	Backbone = Alloy.Backbone,
-	
+
 	fbSDK = require('facebook'),
 	Acl = require('RebelFrame/Acl');
 
@@ -12,19 +12,19 @@ var Alloy = require('alloy'),
  * @singleton
  */
 var FB = {
-	appId: Alloy.CFG.facebook.appId,
-	permissions: Alloy.CFG.facebook.permissions,
+	appId: Alloy.CFG.Facebook.appId,
+	permissions: Alloy.CFG.Facebook.permissions,
 
 	login: function(options) {
 		// Wrap the success function
-		options.success = _.wrap(options.success, function(func, userData) {
-			// Call register function on the Cloud API
-			Acl.registerUserWithCloud(userData, {
-				success: func,
-				error: options.error,
-				scope: options.scope
-			});
-		});
+		// options.success = _.wrap(options.success, function(func, userData) {
+		// 	// Call register function on the Cloud API
+		// 	Acl.registerUserWithCloud(userData, {
+		// 		success: func,
+		// 		error: options.error,
+		// 		scope: options.scope
+		// 	});
+		// });
 
 		// Make the call using the FB SDK
 		_authorize(options);
@@ -70,30 +70,8 @@ var FB = {
 
 	hasWritePermissions: function() {
 		return _.indexOf(fbSDK.permissions, FB.permissions.write[0]) !== -1;
-	},
-
-	watchedVideo: function(video) {
-		if (!Ti.App.Properties.getBool('c.FBShareWatched', false))
-			return;
-
-		shareActivity('video.watches', video);
-	},
-
-	likesVideo: function(video) {
-		if (!Ti.App.Properties.getBool('c.FBShareLikes', false))
-			return;
-
-		var url = 'http://www.youtube.com/watch?v=' + video.id;
-
-		if (!FB.isLoggedin()) {
-			_authorize({
-				success: function() {
-					likeObject(url);
-				}
-			});
-		} else
-			likeObject(url);
 	}
+
 };
 
 function _authorize(options) {
@@ -108,6 +86,7 @@ function _authorize(options) {
 			var userData = {
 				facebook_id: fbSDK.uid,
 				facebook_access_token: fbSDK.accessToken,
+				facebook_expiration: fbSDK.expirationDate,
 				type: 'facebook'
 			};
 
@@ -140,14 +119,7 @@ function _authorize(options) {
 
 	// If user is loggedin to Facebook, log him/her out first
 	if (fbSDK.loggedIn) {
-		var onLogout = function(evt) {
-			fbSDK.removeEventListener('logout', onLogout);
-
-			fbSDK.authorize();
-		};
-		fbSDK.addEventListener('logout', onLogout);
-
-		fbSDK.logout();
+		Ti.API.info('Already loggedin!');
 	} else {
 		fbSDK.authorize();
 	}
@@ -212,29 +184,6 @@ function handleError(evt) {
 		});
 		dialog.show();
 	}
-}
-
-function shareActivity(type, video) {
-	var callback = function(evt) {
-		Ti.API.info(evt);
-	};
-	var data = {
-		video: 'http://youtube.com/v/' + video.id
-	};
-
-	fbSDK.requestWithGraphPath('me/' + type, data, 'POST', callback);
-}
-
-function likeObject(url) {
-	var data = {
-		object: url
-	};
-
-	Ti.API.info(data);
-
-	fbSDK.requestWithGraphPath('/me/og.likes', data, 'POST', function(evt) {
-		Ti.API.info(evt);
-	});
 }
 
 module.exports = FB;
