@@ -149,8 +149,8 @@ var Framework = module.exports = {
 				controller.construct.call(controller, config || {});
 
 			// Track screen
-			if (name !== 'index')
-				require('RebelFrame/Tracker').trackScreen(name);
+			// if (name !== 'index')
+			// 	require('RebelFrame/Tracker').trackScreen(name);
 
 			return controller;
 		};
