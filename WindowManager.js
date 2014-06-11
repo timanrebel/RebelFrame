@@ -100,18 +100,19 @@ var WM = module.exports = {
 			else
 				win.open();
 		} else if (OS_ANDROID) {
-			Ti.API.info(win.showSideMenu);
+
 			if (win.showSideMenu) {
 				// Create SideMenu if not yet created.
 				setupNavDrawer({
 					centerWin: win
 				});
-			}
+
 				// win.addEventListener('open', onOpenTopWindow);
-			// } else
+			} else {
 				// win.addEventListener('open', onOpenSubWindow);
 
-			// win.open();
+				win.open();
+			}
 		} else
 			win.open();
 	},
@@ -373,7 +374,7 @@ function setupNavDrawer(config) {
 			// Create NavigationDrawer for Android
 			_navDrawer = require('RebelFrame/SideMenu/Android');
 			_navDrawer.setup(config);
-			
+
 			_navDrawer.on('navigate', function(evt) {
 				// Open new win
 				// Close old win
