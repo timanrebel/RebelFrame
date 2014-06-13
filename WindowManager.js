@@ -108,6 +108,8 @@ var WM = module.exports = {
 				});
 
 				win.addEventListener('open', onOpenTopWindow);
+
+				win.open();
 			} else {
 				win.addEventListener('open', onOpenSubWindow);
 
