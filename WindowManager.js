@@ -100,18 +100,21 @@ var WM = module.exports = {
 			else
 				win.open();
 		} else if (OS_ANDROID) {
-			Ti.API.info(win.showSideMenu);
+
 			if (win.showSideMenu) {
 				// Create SideMenu if not yet created.
 				setupNavDrawer({
 					centerWin: win
 				});
-			}
-				// win.addEventListener('open', onOpenTopWindow);
-			// } else
-				// win.addEventListener('open', onOpenSubWindow);
 
-			// win.open();
+				win.addEventListener('open', onOpenTopWindow);
+
+				win.open();
+			} else {
+				win.addEventListener('open', onOpenSubWindow);
+
+				win.open();
+			}
 		} else
 			win.open();
 	},
@@ -246,8 +249,8 @@ if (OS_ANDROID) {
 				actionBar.icon = '/images/generic/hamburger.png';
 
 				actionBar.onHomeIconItemSelected = function() {
-					if (_navDrawerAndroid) {
-						_navDrawerAndroid.toggleDrawer();
+					if (_navDrawer) {
+						_navDrawer.toggleDrawer();
 					}
 				};
 			}
@@ -368,18 +371,20 @@ function setupNavDrawer(config) {
 		}
 	} else if (OS_ANDROID) {
 		if (!_navDrawer) {
-			console.log('drawer');
+			// Make reference to new centerWindow, so we can close later
+			_centerWin = config.centerWin;
 
 			// Create NavigationDrawer for Android
-			_navDrawer = require('RebelFrame/SideMenu/Android');
-			_navDrawer.setup(config);
-			
-			_navDrawer.on('navigate', function(evt) {
-				// Open new win
-				// Close old win
-			});
+			_navDrawer = Alloy.createWidget(Alloy.CFG.SideMenu.menuWidget);
+			_navDrawer.attach(config.centerWin);
 		} else {
 			_navDrawer.attach(config.centerWin);
+
+			// Close old centerWindow
+			WM.closeWin(_centerWin);
+
+			// Make reference to new centerWindow, so we can close later
+			_centerWin = config.centerWin;
 		}
 	}
 }

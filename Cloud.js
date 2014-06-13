@@ -50,8 +50,9 @@ var Cloud = (function() {
 				} else
 					data = config.data;
 
-				// Add base Url
-				url = Alloy.CFG.baseUrl + url;
+				// Add base Url if url does not start with http
+				if(url.substr(0, 4) !== 'http')
+					url = Alloy.CFG.baseUrl + url;
 
 				Ti.API.info(method + ': ' + url);
 				// Ti.API.info(data);
