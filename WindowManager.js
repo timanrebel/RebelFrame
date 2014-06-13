@@ -247,8 +247,8 @@ if (OS_ANDROID) {
 				actionBar.icon = '/images/generic/hamburger.png';
 
 				actionBar.onHomeIconItemSelected = function() {
-					if (_navDrawerAndroid) {
-						_navDrawerAndroid.toggleDrawer();
+					if (_navDrawer) {
+						_navDrawer.toggleDrawer();
 					}
 				};
 			}
@@ -373,12 +373,8 @@ function setupNavDrawer(config) {
 			_centerWin = config.centerWin;
 
 			// Create NavigationDrawer for Android
-			_navDrawer = Alloy.createWidget('c.SideMenu');
+			_navDrawer = Alloy.createWidget(Alloy.CFG.SideMenu.menuWidget);
 			_navDrawer.attach(config.centerWin);
-			_navDrawer.on('navigate', function(evt) {
-				// Open new win
-				// Close old win
-			});
 		} else {
 			_navDrawer.attach(config.centerWin);
 
