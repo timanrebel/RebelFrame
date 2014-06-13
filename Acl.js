@@ -104,9 +104,14 @@ var Acl = {
             Acl.user.off();
 
 		Acl.user = user;
+
+        // Every time the Loggedin User changes, save it to properties
         Acl.user.on('change', function(model) {
             Ti.App.Properties.setObject('loggedinUser', model.attributes);
         });
+
+        // Save to properties now
+        Ti.App.Properties.setObject('loggedinUser', Acl.user.attributes);
 
 		Acl.setIsLoggedin(user);
 	},
