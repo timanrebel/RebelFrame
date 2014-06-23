@@ -10,7 +10,7 @@ var Alloy = require('alloy'),
  * @class Media
  * @singleton
  */
-var Media = {
+var Media = module.exports = {
 	callback: null,
 
 	newPhoto: function(callback) {
@@ -18,7 +18,7 @@ var Media = {
 
 		var dialog = Ti.UI.createOptionDialog({
 			title: '',
-			options: [L('lTakePhoto'), L('lChooseFromLibrary'), L('Cancel')],
+			options: [L('lTakePhoto', 'Take a photo'), L('lChooseFromLibrary', 'Choose from library'), L('Cancel', 'Cancel')],
 			cancel: 2
 		});
 		dialog.addEventListener('click', onUploadDialog);
@@ -33,14 +33,12 @@ var Media = {
 	 */
 	newFromCamera: function(successCallback, acceptedMediaTypes) {
 		Ti.Media.showCamera({
-			success: function(evt) {
-				successCallback(evt, 'camera');
-			},
+			success: successCallback,
 			cancel: onCancel,
 			error: onError,
 			allowEditing: true,
 			saveToPhotoGallery: true,
-			mediaTypes: acceptedMediaTypes || [Ti.Media.MEDIA_TYPE_VIDEO, Ti.Media.MEDIA_TYPE_PHOTO],
+			mediaTypes: acceptedMediaTypes || [Ti.Media.MEDIA_TYPE_PHOTO],
 			videoQuality: Ti.Media.QUALITY_MEDIUM
 		});
 	},
@@ -52,15 +50,15 @@ var Media = {
 	 * @param {Array} acceptedMediaTypes (Optional) The accepted media formats
 	 */
 	newFromGallery: function(successCallback, acceptedMediaTypes) {
+		console.log('gallery');
+
 		Ti.Media.openPhotoGallery({
-			success: function(evt) {
-				successCallback(evt, 'gallery');
-			},
+			success: successCallback,
 			cancel: onCancel,
 			error: onError,
 			allowEditing: true,
 			saveToPhotoGallery: false,
-			mediaTypes: acceptedMediaTypes || [Ti.Media.MEDIA_TYPE_VIDEO, Ti.Media.MEDIA_TYPE_PHOTO],
+			mediaTypes: acceptedMediaTypes || [Ti.Media.MEDIA_TYPE_PHOTO],
 			videoQuality: Ti.Media.QUALITY_MEDIUM
 		});
 	},
@@ -84,32 +82,29 @@ var Media = {
 			compressedBlob;
 
 		// Resize image to max 1280x1280
-		if (OS_IOS && blob.width !== 0 && blob.height !== 0) {
-
-			if (blob.width > blob.height) {
-				width = maxSize;
-				height = Math.round(maxSize / (blob.width / blob.height));
-			} else {
-				width = Math.round(maxSize / (blob.height / blob.width));
-				height = maxSize;
-			}
-			// compressedBlob = blob.imageAsResized(width, height);
-
-			compressedBlob = ImageFactory.imageAsResized(blob, {
-				width: width,
-				height: height
-			});
-			compressedBlob = ImageFactory.compress(compressedBlob, 0.6);
-
-		} else if (OS_ANDROID) {
-			// Write to a temporary file to overcome out of memory problems
-			compressedBlob = Ti.Filesystem.createTempFile();
-			compressedBlob.write(blob);
+		if (blob.width > blob.height) {
+			width = maxSize;
+			height = Math.round(maxSize / (blob.width / blob.height));
 		} else {
-			compressedBlob = blob;
+			width = Math.round(maxSize / (blob.height / blob.width));
+			height = maxSize;
 		}
 
-		return compressedBlob;
+		// Resize image
+		compressedBlob = ImageFactory.imageAsResized(blob, {
+			width: width,
+			height: height
+		});
+		compressedBlob = ImageFactory.compress(compressedBlob, 0.6);
+
+		if (OS_ANDROID) {
+			// Write to a temporary file to overcome out of memory problems
+			tmpFile = Ti.Filesystem.createTempFile();
+			tmpFile.write(blob);
+
+			return tmpFile;
+		} else
+			return compressedBlob;
 	},
 
 	/**
@@ -140,10 +135,12 @@ var Media = {
 function onUploadDialog(evt) {
 	this.removeEventListener('click', onUploadDialog);
 
+	console.log(evt);
+
 	if (evt.index === 0)
-		Media.newFromCamera(Media.callback, [Ti.Media.MEDIA_TYPE_PHOTO]);
-	else if (evt.index === 1) {
-		Media.newFromGallery(Media.callback, [Ti.Media.MEDIA_TYPE_PHOTO]);
+		Media.newFromCamera(Media.callback);
+	else if (evt.index == 1) {
+		Media.newFromGallery(Media.callback);
 	}
 }
 
@@ -166,9 +163,8 @@ function onCancel(evt, source) {}
 function onError(evt, source) {
 	var dialog = Ti.UI.createAlertDialog({
 		title: 'Camera',
-		message: evt.code == Titanium.Media.NO_CAMERA ? 'Please run this test on a mobile device' : 'Unexpected error: ' + evt.code
+		message: evt.code == Titanium.Media.NO_CAMERA ?
+			'Please run this test on a mobile device' : 'Unexpected error: ' + evt.code
 	});
 	dialog.show();
 }
-
-module.exports = Media;
