@@ -160,7 +160,7 @@ function handleError(evt) {
 		// For all of these errors - assume the user is logged out
 		// so show your login UI
 		if (evt.error.indexOf('Go to Settings') === 0) {
-			message = L('fb_no_premission', 'Snowciety needs permission to access your facebook account. You can control this by going to Settings > Facebook on your phone.');
+			message = String.format(L('fb_no_premission', '%1$s needs permission to access your facebook account. You can control this by going to Settings > Facebook on your phone.'), Ti.App.name);
 		} else if (evt.error.indexOf('Session Login Error') === 0) {
 			// Session was invalid - e.g. the user deauthorized your app, etc
 			// alert('Please login again.');
