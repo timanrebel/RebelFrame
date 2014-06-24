@@ -68,39 +68,48 @@ var Media = module.exports = {
 	 * - resizing and compressing it on iOS
 	 * - creating a temporary file and return the file handler for Android (memory issues)
 	 *
-	 * @param {Object} blob
-	 * @return {Object} Compressed blob or file handler on Android
+	 * @param {Ti.Blob} blob Blob to prepare for upload
+	 * @param {Object} options Options
+	 * @param {Boolean} [options.square] Whether or not to square the image
+	 * @param {Number} [options.maxSize=1280] Maximum size of width or height.
+	 *
+	 * @return {Object} Compressed blob or file handle on Android
 	 */
-	prepareBlobForUpload: function(blob) {
-		if (!blob) {
-			return null;
-		}
-
-		var maxSize = 1280,
+	prepareBlobForUpload: function(blob, options) {
+		var maxSize = options.maxSize || 1280,
 			width, height,
-			resizedBlob,
 			compressedBlob;
 
-		// Resize image to max 1280x1280
-		if (blob.width > blob.height) {
-			width = maxSize;
-			height = Math.round(maxSize / (blob.width / blob.height));
-		} else {
-			width = Math.round(maxSize / (blob.height / blob.width));
-			height = maxSize;
+		// Resize image
+		if(options.square) {
+			compressedBlob = ImageFactory.imageAsThumbnail(blob, {
+				size: maxSize,
+				borderSize: 0
+			});
+		}
+		else {
+			// Resize image to max maxSize x maxSize
+			if (blob.width > blob.height) {
+				width = maxSize;
+				height = Math.round(maxSize / (blob.width / blob.height));
+			} else {
+				width = Math.round(maxSize / (blob.height / blob.width));
+				height = maxSize;
+			}
+
+			compressedBlob = ImageFactory.imageAsResized(blob, {
+				width: width,
+				height: height
+			});
 		}
 
-		// Resize image
-		compressedBlob = ImageFactory.imageAsResized(blob, {
-			width: width,
-			height: height
-		});
-		compressedBlob = ImageFactory.compress(compressedBlob, 0.6);
+		// Compress blob
+		compressedBlob = ImageFactory.compress(compressedBlob, 0.7);
 
 		if (OS_ANDROID) {
 			// Write to a temporary file to overcome out of memory problems
 			tmpFile = Ti.Filesystem.createTempFile();
-			tmpFile.write(blob);
+			tmpFile.write(compressedBlob);
 
 			return tmpFile;
 		} else
