@@ -2,13 +2,14 @@ var Alloy = require('alloy'),
 	_ = Alloy._,
 	Backbone = Alloy.Backbone,
 	_navDrawerModule = require('de.marcelpociot.sidemenu'),
-	WM = require('WindowManager');
+
+	WM = require('RebelFrame/WindowManager');
 
 var Parallax = {
 	setup: function(config) {
 		_centerWin = config.centerWin;
 		var leftWin = Ti.UI.createWindow();
-		leftWin.add(Alloy.createWidget('c.SideMenu').getView());
+		leftWin.add(Alloy.createWidget(Alloy.CFG.SideMenu.menuWidget).getView());
 
 		_navDrawer = _navDrawerModule.createSideMenu({
 			contentView: _centerWin,
