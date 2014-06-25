@@ -50,7 +50,14 @@ var Parallax = {
 	},
 
 	toggleLeftWindow: function(evt) {
-		_navDrawer.presentMenuViewController();
+		if(!_open) {
+			_open = true;
+			_navDrawer.presentMenuViewController();
+		}
+		else {
+			_open = false;
+			_navDrawer.hideMenuViewController();
+		}
 	}
 };
 
@@ -62,6 +69,8 @@ _.extend(Parallax, Backbone.Events);
 var _centerWin;
 
 var _navDrawer;
+
+var _open;
 
 /**
  * Handle 'open' event
