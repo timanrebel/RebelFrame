@@ -77,7 +77,7 @@ var _navDrawer;
 function onNavDrawerOpen(evt) {
 	Napp.trigger('open', evt);
 
-	_navDrawer.setStatusBarStyle(_navDrawerModule.STATUSBAR_BLACK);
+	// _navDrawer.setStatusBarStyle(_navDrawerModule.STATUSBAR_BLACK);
 }
 
 /**
@@ -86,5 +86,5 @@ function onNavDrawerOpen(evt) {
 function onNavDrawerClose(evt) {
 	Napp.trigger('close', evt);
 
-	_navDrawer.setStatusBarStyle(_navDrawerModule.STATUSBAR_WHITE);
+	// _navDrawer.setStatusBarStyle(_navDrawerModule.STATUSBAR_WHITE);
 }
