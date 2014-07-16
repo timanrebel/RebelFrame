@@ -174,13 +174,29 @@ var WM = module.exports = {
 	killStack: function(name) {
 		if (_windowStacks[name])
 			_.each(_windowStacks[name], function(win) {
-				WM.closeWin(win);
+				console.log('Closing ' + win);
+				// WM.closeWin(win);
+				win.close();
 			});
 	},
+
 	destruct: function() {
 		_.each(WM.navWindows,function(win) {
 			WM.closeWin(win);
 		});
+
+		if(Alloy.Globals.tabGroup) {
+			Alloy.Globals.tabGroup.close();
+
+			delete Alloy.Globals.tabGroup;
+		}
+
+		if(_navDrawer) {
+			if(_navDrawer.destruct)
+				_navDrawer.destruct();
+
+			_navDrawer = null;
+		}
 	}
 
 };

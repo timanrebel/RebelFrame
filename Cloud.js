@@ -54,7 +54,7 @@ var Cloud = (function() {
 				if(url.substr(0, 4) !== 'http')
 					url = Alloy.CFG.baseUrl + url;
 
-				Ti.API.info(method + ': ' + url);
+				Ti.API.debug(method + ': ' + url);
 				// Ti.API.info(data);
 
 				// Open connection
@@ -65,7 +65,7 @@ var Cloud = (function() {
 					this.httpClient.setRequestHeader(key, config.headers[key]);
 				}
 
-				Ti.API.info(config.headers);
+				Ti.API.debug(config.headers);
 
 				this.httpClient.send(data);
 			},
