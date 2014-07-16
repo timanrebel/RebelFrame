@@ -120,6 +120,9 @@ function _authorize(options) {
 	// If user is loggedin to Facebook, log him/her out first
 	if (fbSDK.loggedIn) {
 		Ti.API.info('Already loggedin!');
+
+		callbackWrapper({success: true});
+
 	} else {
 		fbSDK.authorize();
 	}
