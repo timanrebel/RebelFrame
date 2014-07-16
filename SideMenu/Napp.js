@@ -76,7 +76,7 @@ var _navDrawer;
  */
 function onNavDrawerOpen(evt) {
 	Napp.trigger('open', evt);
-
+	
 	// _navDrawer.setStatusBarStyle(_navDrawerModule.STATUSBAR_BLACK);
 }
 
