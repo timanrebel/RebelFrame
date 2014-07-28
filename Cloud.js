@@ -48,7 +48,7 @@ var Cloud = (function() {
 					if (query = toQueryString(config.data))
 						url = url + (url.indexOf('?') > 0 ? '&' : '?') + query;
 				} else
-					data = config.data;
+					data = config.data || {};
 
 				// Add base Url if url does not start with http
 				if(url.substr(0, 4) !== 'http')
@@ -63,6 +63,13 @@ var Cloud = (function() {
 				// Set headers after opening connection
 				for (var key in config.headers) {
 					this.httpClient.setRequestHeader(key, config.headers[key]);
+				}
+
+				if(config.json) {
+					this.httpClient.setRequestHeader('Content-Type', 'application/json');
+
+					if(data)
+						data = JSON.stringify(data);
 				}
 
 				Ti.API.debug(config.headers);
