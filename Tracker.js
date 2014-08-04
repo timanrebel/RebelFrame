@@ -4,7 +4,7 @@ var Alloy = require('alloy'),
 	GA = require('analytics.google');
 
 //GA.optOut = true;
-GA.debug = true;
+GA.debug = false;
 GA.trackUncaughtExceptions = true;
 
 var GoogleTracker = GA.getTracker(Alloy.CFG.gaTrackingID);
