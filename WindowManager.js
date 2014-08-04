@@ -38,8 +38,12 @@ var WM = module.exports = {
 	 */
 	openWinInActiveNavWindow: function(win) {
 		if (OS_IOS) {
-			if (!WM.navWindows.length)
-				WM.createNewNavWindow(win).open();
+			if (!WM.navWindows.length) {
+				if(Alloy.Globals.tabGroup)
+					Alloy.Globals.tabGroup.activeTab.open(win);
+				else
+					WM.createNewNavWindow(win).open();
+			}
 			else
 				_.last(WM.navWindows).openWindow(win);
 		} else
@@ -67,13 +71,14 @@ var WM = module.exports = {
 			// Show SideMenu button and replace current centerWindow with this new Window
 			if (win.showSideMenu) {
 				// Show sideMenu button
-				var sideMenuButton = Alloy.createWidget('rebel.MenuBarButton', {
-					buttonType: 'hamburger'
+				var sideMenuButton = Alloy.createWidget(Alloy.CFG.SideMenu.buttonWidget || 'rebel.MenuBarButton', {
+					buttonType: 'hamburger',
+					delay: 200
 				});
 				win.leftNavButton = sideMenuButton.getView();
 				sideMenuButton.on('click', WM.toggleLeftNavDrawer);
 
-				// Create SideMenu if not yet created. 
+				// Create SideMenu if not yet created.
 				// Else replace current centerWindow with this Window
 				setupNavDrawer({
 					centerWin: WM.createNewNavWindow(win)
@@ -87,7 +92,7 @@ var WM = module.exports = {
 					modal: true
 				});
 			}
-			// If window should be part of NavigationGroup 
+			// If window should be part of NavigationGroup
 			else if (win.navGroup) {
 				WM.openWinInActiveNavWindow(win);
 			}
@@ -95,24 +100,28 @@ var WM = module.exports = {
 			else
 				win.open();
 		} else if (OS_ANDROID) {
+
 			if (win.showSideMenu) {
-				// Create SideMenu if not yet created. 
+				// Create SideMenu if not yet created.
 				setupNavDrawer({
 					centerWin: win
 				});
 
 				win.addEventListener('open', onOpenTopWindow);
-			} else
+
+				win.open();
+			} else {
 				win.addEventListener('open', onOpenSubWindow);
 
-			win.open();
+				win.open();
+			}
 		} else
 			win.open();
 	},
 
 	/**
 	 * Close the given Window
-	 
+
 	 * @param {Ti.UI.Window} win Window to close
 	 */
 	closeWin: function(win) {
@@ -126,16 +135,24 @@ var WM = module.exports = {
 
 				win.window = null;
 
-				WM.navWindows.pop();
-			}
+				// WM.navWindows.pop();
+				var index = WM.navWindows.indexOf(win);
 
+				WM.navWindows.splice(index, 1);
+
+				win.close();
+			}
 			// If Window is a root Window of a NavigationWindow, close the NavigationWindow instead
-			if (win.navWin) {
+			else if (win.navWin) {
 				var navWin = win.navWin;
-				win.navWin = null;
+				delete win.navWin;
 
 				WM.closeWin(navWin);
-			} else
+			// If Window is part of tabGroup, close via TabGroup
+			} else if(Alloy.Globals.tabGroup)
+				Alloy.Globals.tabGroup.close(win);
+			// Else just close the Window
+			else
 				win.close();
 		} else
 			win.close();
@@ -157,11 +174,34 @@ var WM = module.exports = {
 	killStack: function(name) {
 		if (_windowStacks[name])
 			_.each(_windowStacks[name], function(win) {
-				WM.closeWin(win);
+				console.log('Closing ' + win);
+				// WM.closeWin(win);
+				win.close();
 			});
+	},
+
+	destruct: function() {
+		_.each(WM.navWindows,function(win) {
+			WM.closeWin(win);
+		});
+
+		if(Alloy.Globals.tabGroup) {
+			Alloy.Globals.tabGroup.close();
+
+			delete Alloy.Globals.tabGroup;
+		}
+
+		if(_navDrawer) {
+			if(_navDrawer.destruct)
+				_navDrawer.destruct();
+
+			_navDrawer = null;
+		}
 	}
 
 };
+
+_.extend(WM, Backbone.Events);
 
 /**
  * @property {Object} _windowStacks Dictionary of stacks of Windows. Each element contains an array of one or more windows
@@ -225,8 +265,8 @@ if (OS_ANDROID) {
 				actionBar.icon = '/images/generic/hamburger.png';
 
 				actionBar.onHomeIconItemSelected = function() {
-					if (_navDrawerAndroid) {
-						_navDrawerAndroid.toggleDrawer();
+					if (_navDrawer) {
+						_navDrawer.toggleDrawer();
 					}
 				};
 			}
@@ -326,9 +366,6 @@ if (OS_ANDROID) {
  */
 _navDrawer = null;
 
-if (OS_ANDROID)
-	_centerWin = null;
-
 /**
  * Setup Navigation Drawer module
  * @private
@@ -339,7 +376,7 @@ function setupNavDrawer(config) {
 	// Setup NavDrawer module on iOS
 	if (OS_IOS) {
 		if (!_navDrawer) {
-			_navDrawer = require('RebelFrame/SideMenu/' + Alloy.CFG.sideMenuType);
+			_navDrawer = require('RebelFrame/SideMenu/' + Alloy.CFG.SideMenu.type);
 			_navDrawer.setup(config);
 
 			_navDrawer.on('open', onNavBarOpen);
@@ -354,12 +391,8 @@ function setupNavDrawer(config) {
 			_centerWin = config.centerWin;
 
 			// Create NavigationDrawer for Android
-			_navDrawer = Alloy.createWidget('c.SideMenu');
+			_navDrawer = Alloy.createWidget(Alloy.CFG.SideMenu.menuWidget);
 			_navDrawer.attach(config.centerWin);
-			_navDrawer.on('navigate', function(evt) {
-				// Open new win
-				// Close old win
-			});
 		} else {
 			_navDrawer.attach(config.centerWin);
 

@@ -1,3 +1,8 @@
+var F = require('RebelFrame/Framework'),
+    Alloy = require('alloy'),
+    _ = Alloy._,
+    Backbone = Alloy.Backbone;
+
 /**
  * Access Control List library
  *
@@ -23,7 +28,6 @@ var Acl = {
 	 */
 	setCloudAccessToken: function(access_token) {
 		Acl.cloudAccessToken = access_token;
-		Cloud.accessToken = access_token;
 		Acl.storeCredentials(Ti.App.id, 'cloudAccessToken', access_token);
 	},
 
@@ -80,8 +84,12 @@ var Acl = {
 	getLoggedinUser: function() {
 		if (!Acl.user) {
 			Acl.user = Alloy.createModel('User', {
-				id: Ti.App.Properties.getString('loggedinUserId')
+				objectId: Ti.App.Properties.getString('loggedinUserId')
 			});
+            Acl.user.set(Ti.App.Properties.getObject('loggedinUser', {}));
+            Acl.user.on('change', function(model) {
+                Ti.App.Properties.setObject('loggedinUser', model.attributes);
+            });
 			Acl.user.fetch();
 		}
 		return Acl.user;
@@ -92,12 +100,18 @@ var Acl = {
 	 * @param {Sc.model.UserLoggedIn} user User to set as loggedin User
 	 */
 	setLoggedinUser: function(user) {
+        if(Acl.user)
+            Acl.user.off();
+
 		Acl.user = user;
 
-		// Update cache
-		// Acl.user.save(null, {
-		// 	target: 'cache'
-		// });
+        // Every time the Loggedin User changes, save it to properties
+        Acl.user.on('change', function(model) {
+            Ti.App.Properties.setObject('loggedinUser', model.attributes);
+        });
+
+        // Save to properties now
+        Ti.App.Properties.setObject('loggedinUser', Acl.user.attributes);
 
 		Acl.setIsLoggedin(user);
 	},
@@ -162,11 +176,11 @@ var Acl = {
 		Acl.setCloudAccessToken(null);
 		// keychain.deletePasswordForService('Collapp', 'cloudAccessToken');
 
-		if (Acl.getLoggedinUser()) {
-			if (Acl.getLoggedinUser().hasSocialNetwork('facebook')) {
-				require('facebook').logout();
-			}
-		}
+		// if (Acl.getLoggedinUser()) {
+		// 	if (Acl.getLoggedinUser().hasSocialNetwork('facebook')) {
+		// 		require('facebook').logout();
+		// 	}
+		// }
 
 		// Unregister for push notifications
 		// PushNotifications.unRegister();

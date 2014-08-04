@@ -2,13 +2,14 @@ var Alloy = require('alloy'),
 	_ = Alloy._,
 	Backbone = Alloy.Backbone,
 	_navDrawerModule = require('dk.napp.drawer'),
-	WM = require('WindowManager');
+	WM = require('RebelFrame/WindowManager');
 
-var Napp = {
+var Napp = module.exports = {
 	setup: function(config) {
 		_centerWin = config.centerWin;
 		var leftWin = Ti.UI.createWindow();
-		leftWin.add(Alloy.createWidget('c.SideMenu').getView());
+
+		leftWin.add(Alloy.createWidget(Alloy.CFG.SideMenu.menuWidget).getView());
 
 		_navDrawer = _navDrawerModule.createDrawer({
 			// set windows
@@ -75,8 +76,8 @@ var _navDrawer;
  */
 function onNavDrawerOpen(evt) {
 	Napp.trigger('open', evt);
-
-	_navDrawer.setStatusBarStyle(_navDrawerModule.STATUSBAR_BLACK);
+	
+	// _navDrawer.setStatusBarStyle(_navDrawerModule.STATUSBAR_BLACK);
 }
 
 /**
@@ -85,7 +86,5 @@ function onNavDrawerOpen(evt) {
 function onNavDrawerClose(evt) {
 	Napp.trigger('close', evt);
 
-	_navDrawer.setStatusBarStyle(_navDrawerModule.STATUSBAR_WHITE);
+	// _navDrawer.setStatusBarStyle(_navDrawerModule.STATUSBAR_WHITE);
 }
-
-module.exports = Napp;

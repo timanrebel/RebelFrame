@@ -81,8 +81,12 @@ var Framework = module.exports = {
 				openWin: function(win) {
 					win = win || controller.getView();
 
+					// When Controller is 'root' Window and should show hamburger, make it so
 					if (!_.isUndefined(config.showSideMenu))
 						win.showSideMenu = config.showSideMenu;
+					// When Controller is opened from the XML of a TabGroup, do nothing
+					else if (!_.isUndefined(config.tabGroup))
+						return;
 
 					// Open the window
 					WM.openWin(win);
@@ -145,8 +149,8 @@ var Framework = module.exports = {
 				controller.construct.call(controller, config || {});
 
 			// Track screen
-			if (name !== 'index')
-				tracker.trackScreen(name);
+			// if (name !== 'index')
+			// 	require('RebelFrame/Tracker').trackScreen(name);
 
 			return controller;
 		};
@@ -211,5 +215,6 @@ var Framework = module.exports = {
 var _status;
 
 // Create some basic globals that can be used in TSS
+Alloy.Globals.deviceHeight = Framework.deviceHeight;
 Alloy.Globals.screenHeight = Framework.deviceHeight - 64;
 Alloy.Globals.screenWidth = Framework.deviceWidth;
