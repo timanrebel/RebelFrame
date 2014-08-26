@@ -216,5 +216,5 @@ var _status;
 
 // Create some basic globals that can be used in TSS
 Alloy.Globals.deviceHeight = Framework.deviceHeight;
-Alloy.Globals.screenHeight = Framework.deviceHeight - 64;
+Alloy.Globals.screenHeight = Framework.deviceHeight - (OS_IOS ? 64 : 72);
 Alloy.Globals.screenWidth = Framework.deviceWidth;
