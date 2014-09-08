@@ -11,25 +11,24 @@ var Alloy = require('alloy'),
  */
 var InApp = {
 	getReceipt: function(callback) {
-		// function validate() {
-		// 	Ti.API.error('Validating receipt.');
-		// 	Ti.API.error('Receipt is Valid: ' + Storekit.validateReceipt());
+		function validate() {
+			Ti.API.error('Validating receipt.');
+			Ti.API.error('Receipt is Valid: ' + Storekit.validateReceipt());
 
-		// 	callback(Storekit.receipt);
-		// }
+			callback(Storekit.receipt);
+		}
 
 		//  During development it is possible that the receipt does not exist.
 		//  This can be resolved by refreshing the receipt.
-
-		// if (!Storekit.receiptExists) {
-		// 	Ti.API.error('Receipt does not exist yet. Refreshing to get one.');
-		// 	Storekit.refreshReceipt(null, function() {
-		// 		validate();
-		// 	});
-		// } else {
-		// 	Ti.API.error('Receipt does exist.');
-		// 	validate();
-		// }
+		if (!Storekit.receiptExists) {
+			Ti.API.error('Receipt does not exist yet. Refreshing to get one.');
+			Storekit.refreshReceipt(null, function() {
+				validate();
+			});
+		} else {
+			Ti.API.error('Receipt does exist.');
+			validate();
+		}
 	},
 
 	purchase: function(product, callback) {
@@ -40,7 +39,7 @@ var InApp = {
 		// }
 		Storekit.purchase({
 			product: product,
-			// applicationUsername is a opaque identifier for the user’s account on your system. 
+			// applicationUsername is a opaque identifier for the user’s account on your system.
 			// Used by Apple to detect irregular activity. Should hash the username before setting.
 			applicationUsername: Ti.Utils.sha1(Acl.getLoggedinUser().id + Acl.salt)
 		});
@@ -81,7 +80,7 @@ Storekit.receiptVerificationSharedSecret = Alloy.CFG.storeKitReceiptVerification
  autoFinishTransactions must be disabled (false) in order to start Apple hosted downloads.
  If autoFinishTransactions is disabled, it is up to you to finish the transactions.
  Transactions must be finished! Failing to finish transactions will cause your app to run slowly.
- Finishing a transaction at any time before its associated download is complete will cancel the download. 
+ Finishing a transaction at any time before its associated download is complete will cancel the download.
  */
 Storekit.autoFinishTransactions = true;
 
@@ -257,5 +256,24 @@ function onRestoredCompletedTransactions(evt) {
 		alert('Restored ' + evt.transactions.length + ' purchases!');
 	}
 }
+
+/**
+ * Tells us if the version of iOS we are running on is iOS 7 or later
+ */
+function isIOS7Plus() {
+	if (Titanium.Platform.name == 'iPhone OS') {
+		var version = Titanium.Platform.version.split(".");
+		var major = parseInt(version[0], 10);
+
+		// can only test this support on a 3.2+ device
+		if (major >= 7) {
+			return true;
+		}
+	}
+	return false;
+
+}
+
+var IOS7 = isIOS7Plus();
 
 module.exports = InApp;
