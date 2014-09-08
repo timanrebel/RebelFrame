@@ -174,7 +174,7 @@ var WM = module.exports = {
 	killStack: function(name) {
 		if (_windowStacks[name])
 			_.each(_windowStacks[name], function(win) {
-				console.log('Closing ' + win);
+				Ti.API.info('Closing ' + win);
 				// WM.closeWin(win);
 				win.close();
 			});

@@ -50,7 +50,7 @@ var Media = module.exports = {
 	 * @param {Array} acceptedMediaTypes (Optional) The accepted media formats
 	 */
 	newFromGallery: function(successCallback, acceptedMediaTypes) {
-		console.log('gallery');
+		Ti.API.info('gallery');
 
 		Ti.Media.openPhotoGallery({
 			success: successCallback,
@@ -145,7 +145,7 @@ var Media = module.exports = {
 function onUploadDialog(evt) {
 	this.removeEventListener('click', onUploadDialog);
 
-	console.log(evt);
+	Ti.API.info(evt);
 
 	if (evt.index === 0)
 		Media.newFromCamera(Media.callback);
