@@ -8,7 +8,7 @@ var Alloy = require('alloy'),
  *
  * RebelFrame's general functions, defined as singleton
  */
-var Framework = module.exports = {
+var Framework = module.exports = _.extend({
 	/**
 	 * @property {String} LOGGEDOUT User has installed App, but not yet loggedin
 	 */
@@ -38,8 +38,17 @@ var Framework = module.exports = {
 	 * @param {String} status The status to set
 	 */
 	setStatus: function(status) {
+		var oldStatus = _status;
 		_status = status;
+
+		// Persist new App Status
 		Ti.App.Properties.setString(Ti.App.id + '.status', status);
+
+		// Trigger event, so App can route based on new App Status
+		Framework.trigger('status', {
+			oldStatus: oldStatus,
+			newStatus: _status
+		});
 	},
 
 	/**
@@ -206,7 +215,7 @@ var Framework = module.exports = {
 				Ti.API.error(' - ' + key + ': ' + type);
 		}
 	}
-};
+}, Backbone.Events);
 
 /**
  * {String} The status of this app (i.e. loggedout, loggedin, activated)

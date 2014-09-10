@@ -174,22 +174,10 @@ var Acl = {
 		Ti.API.info('Removing logged in user id and cloud access token from properties', 'prop');
 		Ti.App.Properties.removeProperty('loggedinUserId');
 		Acl.setCloudAccessToken(null);
-		// keychain.deletePasswordForService('Collapp', 'cloudAccessToken');
 
-		// if (Acl.getLoggedinUser()) {
-		// 	if (Acl.getLoggedinUser().hasSocialNetwork('facebook')) {
-		// 		require('facebook').logout();
-		// 	}
-		// }
-
-		// Unregister for push notifications
-		// PushNotifications.unRegister();
-
-		// Reset Collapp state to logged out
-		F.setStatus(F.INSTALLED);
-
-		// Navigate to index controller and let it handle the rest
-		Alloy.createController('index');
+		// Reset App state to logged out
+		// Routing will handle the rest
+		F.setStatus(F.LOGGEDOUT);
 	},
 
 	/**
