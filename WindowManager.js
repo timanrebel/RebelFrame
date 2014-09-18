@@ -39,12 +39,14 @@ var WM = module.exports = {
 	openWinInActiveNavWindow: function(win) {
 		if (OS_IOS) {
 			if (!WM.navWindows.length) {
-				if(Alloy.Globals.tabGroup)
+				if (Alloy.Globals.tabGroup) {
 					Alloy.Globals.tabGroup.activeTab.open(win);
+
+					win.tabGroup = true;
+				}
 				else
 					WM.createNewNavWindow(win).open();
-			}
-			else
+			} else
 				_.last(WM.navWindows).openWindow(win);
 		} else
 			win.open();
@@ -149,7 +151,7 @@ var WM = module.exports = {
 
 				WM.closeWin(navWin);
 			// If Window is part of tabGroup, close via TabGroup
-			} else if(Alloy.Globals.tabGroup)
+		} else if (win.tabGroup)
 				Alloy.Globals.tabGroup.close(win);
 			// Else just close the Window
 			else
@@ -175,24 +177,23 @@ var WM = module.exports = {
 		if (_windowStacks[name])
 			_.each(_windowStacks[name], function(win) {
 				Ti.API.info('Closing ' + win);
-				// WM.closeWin(win);
-				win.close();
+				WM.closeWin(win);
 			});
 	},
 
 	destruct: function() {
-		_.each(WM.navWindows,function(win) {
+		_.each(WM.navWindows, function(win) {
 			WM.closeWin(win);
 		});
 
-		if(Alloy.Globals.tabGroup) {
+		if (Alloy.Globals.tabGroup) {
 			Alloy.Globals.tabGroup.close();
 
 			delete Alloy.Globals.tabGroup;
 		}
 
-		if(_navDrawer) {
-			if(_navDrawer.destruct)
+		if (_navDrawer) {
+			if (_navDrawer.destruct)
 				_navDrawer.destruct();
 
 			_navDrawer = null;
@@ -230,7 +231,7 @@ if (OS_ANDROID) {
 	 *
 	 * @param {Object} evt Event details
 	 */
-	function onOpenSubWindow(evt) {
+	var onOpenSubWindow = function(evt) {
 		var win = this;
 
 		if (this.activity) {
@@ -248,7 +249,7 @@ if (OS_ANDROID) {
 
 			this.activity.invalidateOptionsMenu();
 		}
-	}
+	};
 
 	/**
 	 * On Android: Handle open event of Top window. It opens the NavigationDrawer
@@ -256,7 +257,7 @@ if (OS_ANDROID) {
 	 *
 	 * @param {Object} evt Event details
 	 */
-	function onOpenTopWindow(evt) {
+	var onOpenTopWindow = function(evt) {
 		if (this.activity) {
 			//Setup ActionBar for level 1 windows
 			var actionBar = this.activity.actionBar;
@@ -278,9 +279,9 @@ if (OS_ANDROID) {
 
 			this.activity.invalidateOptionsMenu();
 		}
-	}
+	};
 
-	function onBackButtonClick(evt) {
+	var onBackButtonClick = function(evt) {
 		this.removeEventListener('androidback', onBackButtonClick);
 
 		// Go back to home
@@ -290,9 +291,9 @@ if (OS_ANDROID) {
 		});
 		intent.addCategory(Ti.Android.CATEGORY_HOME);
 		Ti.Android.currentActivity.startActivity(intent);
-	}
+	};
 
-	function createOptionsMenu(evt) {
+	var createOptionsMenu = function(evt) {
 		var menu = evt.menu,
 			menuItem;
 
@@ -330,13 +331,13 @@ if (OS_ANDROID) {
 		}
 
 		// this.invalidateOptionsMenu();
-	}
+	};
 
-	function onOpenSettings() {
+	var onOpenSettings = function() {
 		Alloy.createController('Settings');
-	}
+	};
 
-	function onOpenHelp() {
+	var onOpenHelp = function() {
 		var Acl = require('Acl'),
 			emailDialog = Ti.UI.createEmailDialog();
 
@@ -358,7 +359,7 @@ if (OS_ANDROID) {
 
 		emailDialog.messageBody = message;
 		emailDialog.open();
-	}
+	};
 }
 /**
  * @property {Ti.UI.Window} _navDrawer The Navigation Drawer window
