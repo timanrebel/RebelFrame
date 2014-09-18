@@ -57,10 +57,10 @@ var Framework = module.exports = _.extend({
 	 * @return {String} The status
 	 */
 	getStatus: function() {
-		if (_status)
-			return _status;
+		if (!_status)
+			_status = Ti.App.Properties.getString(Ti.App.id + '.status', Framework.LOGGEDOUT);
 
-		return Ti.App.Properties.getString(Ti.App.id + '.status', Framework.LOGGEDOUT);
+		return _status;
 	},
 
 	/**
