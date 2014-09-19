@@ -100,6 +100,14 @@ var Framework = module.exports = _.extend({
 					// Open the window
 					WM.openWin(win);
 
+					function onOpenWin(evt) {
+						this.removeEventListener('open', onOpenWin);
+
+						// If there is a onOpen callback, call it
+						if(_.isFunction(config.onOpen))
+							config.onOpen(controller);
+					}
+
 					/**
 					 * Handle `close` event of Window. Removes eventlistener and calls both RebelFrame's destruct as Alloy's destroy functions.
 					 *
@@ -108,18 +116,27 @@ var Framework = module.exports = _.extend({
 					function onCloseWin(evt) {
 						this.removeEventListener('close', onCloseWin);
 
-						if (controller.destruct) {
+						// If there is a destruct function, call it.
+						if (_.isFunction(controller.destruct)) {
 							Ti.API.debug('destruct() called');
 							controller.destruct.call(controller, evt);
 						} else
 							Ti.API.warn('destruct() NOT called');
 
+						// Call Aloy's own destroy function
 						controller.destroy.call(controller, evt);
+
+						// If there is a onClose callback, call it
+						if(_.isFunction(config.onClose))
+							config.onClose(controller);
 
 						// Cleanup possible panning:
 						evt.source.keyboardPanning = false;
 					}
 
+					if(_.isFunction(config.onOpen))
+						win.addEventListener('open', onOpenWin);
+					
 					win.addEventListener('close', onCloseWin);
 				},
 
