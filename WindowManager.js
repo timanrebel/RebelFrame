@@ -151,11 +151,13 @@ var WM = module.exports = {
 
 				WM.closeWin(navWin);
 			// If Window is part of tabGroup, close via TabGroup
-		} else if (win.tabGroup)
-				Alloy.Globals.tabGroup.close(win);
+			} else if (win.tabGroup) {
+				Alloy.Globals.tabGroup.activeTab.close(win);
+			}
 			// Else just close the Window
-			else
+			else {
 				win.close();
+			}
 		} else
 			win.close();
 	},

@@ -94,7 +94,7 @@ var Framework = module.exports = _.extend({
 					if (!_.isUndefined(config.showSideMenu))
 						win.showSideMenu = config.showSideMenu;
 					// When Controller is opened from the XML of a TabGroup, do nothing
-					else if (!_.isUndefined(config.tabGroup))
+					else if (!_.isUndefined(config.tabGroupRoot))
 						return;
 
 					// Open the window
@@ -136,7 +136,7 @@ var Framework = module.exports = _.extend({
 
 					if(_.isFunction(config.onOpen))
 						win.addEventListener('open', onOpenWin);
-					
+
 					win.addEventListener('close', onCloseWin);
 				},
 
