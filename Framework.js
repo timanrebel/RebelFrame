@@ -3,6 +3,12 @@ var Alloy = require('alloy'),
 	Backbone = Alloy.Backbone;
 
 /**
+* {String} The status of this app (i.e. loggedout, loggedin, activated)
+* @private
+*/
+var _status;
+
+/**
  * @class Framework
  * @singleton
  *
@@ -57,8 +63,12 @@ var Framework = module.exports = _.extend({
 	 * @return {String} The status
 	 */
 	getStatus: function() {
+		Ti.API.error('stored status', Ti.App.Properties.getString(Ti.App.id + '.status'));
+
 		if (!_status)
 			_status = Ti.App.Properties.getString(Ti.App.id + '.status', Framework.LOGGEDOUT);
+
+		Ti.API.error('returned status', _status);
 
 		return _status;
 	},
@@ -233,12 +243,6 @@ var Framework = module.exports = _.extend({
 		}
 	}
 }, Backbone.Events);
-
-/**
- * {String} The status of this app (i.e. loggedout, loggedin, activated)
- * @private
- */
-var _status;
 
 // Create some basic globals that can be used in TSS
 Alloy.Globals.deviceHeight = Framework.deviceHeight;

@@ -284,7 +284,7 @@ if (OS_ANDROID) {
 	};
 
 	var onBackButtonClick = function(evt) {
-		this.removeEventListener('androidback', onBackButtonClick);
+		// this.removeEventListener('androidback', onBackButtonClick);
 
 		// Go back to home
 		// Ti.Android.currentActivity.finish();

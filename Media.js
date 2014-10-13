@@ -76,8 +76,9 @@ var Media = module.exports = {
 	 * @return {Object} Compressed blob or file handle on Android
 	 */
 	prepareBlobForUpload: function(blob, options) {
-		var options = options || {},
-			maxSize = options.maxSize || 1280,
+		options = options || {};
+
+		var maxSize = options.maxSize || 1280,
 			width, height,
 			compressedBlob;
 

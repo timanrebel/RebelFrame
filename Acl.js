@@ -214,8 +214,6 @@ var Acl = {
 	 * @param {Object} callback.scope Scope to call the callback function in
 	 */
 	registerUserWithCloud: function(userData, callback) {
-		Ti.API.info(userData);
-
 		return new Cloud({
 			url: '/user',
 			method: 'POST',
@@ -256,8 +254,6 @@ var Acl = {
 	 * @param {Object} callback.scope Scope to call the callback function in
 	 */
 	onLoginSuccess: function(cloudResponse, callback) {
-		Ti.API.info(cloudResponse);
-
 		var cloudUser = cloudResponse.user;
 
 		if (cloudResponse.access_token) {
