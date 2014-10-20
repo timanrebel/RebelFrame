@@ -239,12 +239,17 @@ if (OS_ANDROID) {
 		if (this.activity) {
 			//Setup the ActionBar for 1> level windows
 			var actionBar = this.activity.actionBar;
-			if (actionBar && !this.navBarHidden) {
-				actionBar.displayHomeAsUp = true;
-				actionBar.icon = '/images/generic/logoTransparentSmall.png';
-				actionBar.onHomeIconItemSelected = function() {
-					win.close();
-				};
+			if (actionBar) {
+				if(!this.navBarHidden) {
+					actionBar.displayHomeAsUp = true;
+					actionBar.icon = '/images/generic/logoTransparentSmall.png';
+					actionBar.onHomeIconItemSelected = function() {
+						win.close();
+					};
+				}
+				else {
+					actionBar.hide();
+				}
 			}
 
 			this.activity.onPrepareOptionsMenu = createOptionsMenu;
@@ -263,15 +268,20 @@ if (OS_ANDROID) {
 		if (this.activity) {
 			//Setup ActionBar for level 1 windows
 			var actionBar = this.activity.actionBar;
-			if (actionBar && !this.navBarHidden) {
-				actionBar.displayHomeAsUp = false;
-				actionBar.icon = '/images/generic/hamburger.png';
+			if (actionBar) {
+				if(!this.navBarHidden) {
+					actionBar.displayHomeAsUp = false;
+					actionBar.icon = '/images/generic/hamburger.png';
 
-				actionBar.onHomeIconItemSelected = function() {
-					if (_navDrawer) {
-						_navDrawer.toggleDrawer();
-					}
-				};
+					actionBar.onHomeIconItemSelected = function() {
+						if (_navDrawer) {
+							_navDrawer.toggleDrawer();
+						}
+					};
+				}
+				else {
+					actionBar.hide();
+				}
 			}
 
 			// Close app when clicking back button
