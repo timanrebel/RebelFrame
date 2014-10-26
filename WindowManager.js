@@ -110,11 +110,12 @@ var WM = module.exports = {
 				});
 
 				win.addEventListener('open', onOpenTopWindow);
-
+				win.open();
+			} else if(win.apiName == 'Ti.UI.TabGroup') {
+				win.addEventListener('open', onOpenTopWindow);
 				win.open();
 			} else {
 				win.addEventListener('open', onOpenSubWindow);
-
 				win.open();
 			}
 		} else
@@ -176,11 +177,12 @@ var WM = module.exports = {
 	 * @param {String} name Name of Stack to close
 	 */
 	killStack: function(name) {
-		if (_windowStacks[name])
+		if (_windowStacks[name]) {
 			_.each(_windowStacks[name], function(win) {
-				Ti.API.info('Closing ' + win);
+				Ti.API.info('Closing ' + name + ' ' + win.id);
 				WM.closeWin(win);
 			});
+		}
 	},
 
 	destruct: function() {
@@ -252,9 +254,9 @@ if (OS_ANDROID) {
 				}
 			}
 
-			this.activity.onPrepareOptionsMenu = createOptionsMenu;
-
-			this.activity.invalidateOptionsMenu();
+			// this.activity.onPrepareOptionsMenu = createOptionsMenu;
+			//
+			// this.activity.invalidateOptionsMenu();
 		}
 	};
 
@@ -287,9 +289,9 @@ if (OS_ANDROID) {
 			// Close app when clicking back button
 			this.addEventListener('androidback', onBackButtonClick);
 
-			this.activity.onPrepareOptionsMenu = createOptionsMenu;
-
-			this.activity.invalidateOptionsMenu();
+			// this.activity.onPrepareOptionsMenu = createOptionsMenu;
+			//
+			// this.activity.invalidateOptionsMenu();
 		}
 	};
 
@@ -332,15 +334,15 @@ if (OS_ANDROID) {
 		// }
 
 		// Help
-		if (!menu.findItem(999)) {
-			menuItem = menu.add({
-				itemId: 999,
-				title: L('Help'),
-				showAsAction: Ti.Android.SHOW_AS_ACTION_NEVER,
-				order: 999
-			});
-			menuItem.addEventListener('click', onOpenHelp);
-		}
+		// if (!menu.findItem(999)) {
+		// 	menuItem = menu.add({
+		// 		itemId: 999,
+		// 		title: L('Help'),
+		// 		showAsAction: Ti.Android.SHOW_AS_ACTION_NEVER,
+		// 		order: 999
+		// 	});
+		// 	menuItem.addEventListener('click', onOpenHelp);
+		// }
 
 		// this.invalidateOptionsMenu();
 	};

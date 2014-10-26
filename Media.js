@@ -110,9 +110,8 @@ var Media = module.exports = {
 
 		if (OS_ANDROID) {
 			// Write to a temporary file to overcome out of memory problems
-			tmpFile = Ti.Filesystem.createTempFile();
+			var tmpFile = Ti.Filesystem.createTempFile();
 			tmpFile.write(compressedBlob);
-
 			return tmpFile;
 		} else
 			return compressedBlob;

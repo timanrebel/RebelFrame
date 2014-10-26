@@ -107,15 +107,11 @@ var Framework = module.exports = _.extend({
 					else if (!_.isUndefined(config.tabGroupRoot))
 						return;
 
-					// Open the window
-					WM.openWin(win);
-
 					function onOpenWin(evt) {
 						this.removeEventListener('open', onOpenWin);
 
 						// If there is a onOpen callback, call it
-						if(_.isFunction(config.onOpen))
-							config.onOpen(controller);
+						config.onOpen(controller);
 					}
 
 					/**
@@ -141,13 +137,18 @@ var Framework = module.exports = _.extend({
 							config.onClose(controller);
 
 						// Cleanup possible panning:
-						evt.source.keyboardPanning = false;
+						if(OS_IOS)
+							evt.source.keyboardPanning = false;
 					}
 
 					if(_.isFunction(config.onOpen))
 						win.addEventListener('open', onOpenWin);
 
 					win.addEventListener('close', onCloseWin);
+
+					// Open the window
+					WM.openWin(win);
+
 				},
 
 				/**
