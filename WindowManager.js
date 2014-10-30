@@ -211,7 +211,7 @@ _.extend(WM, Backbone.Events);
 /**
  * @property {Object} _windowStacks Dictionary of stacks of Windows. Each element contains an array of one or more windows
  */
-_windowStacks = {};
+var _windowStacks = {};
 
 /**
  * Add given Window to stack with given name
@@ -379,7 +379,9 @@ if (OS_ANDROID) {
  * @property {Ti.UI.Window} _navDrawer The Navigation Drawer window
  * @private
  */
-_navDrawer = null;
+var _navDrawer,
+
+	_centerWin;
 
 /**
  * Setup Navigation Drawer module

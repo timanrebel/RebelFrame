@@ -41,6 +41,8 @@ var Acl = {
 	 * @param {Object} failure Callback object containing function (& scope); will be called upon error
 	 */
 	authenticateUserWithCloud: function(username, password, type, success, failure) {
+        var Cloud = require('RebelFrame/Cloud');
+
 		return new Cloud({
 			url: '/oauth/access_token',
 			method: 'POST',
@@ -214,6 +216,8 @@ var Acl = {
 	 * @param {Object} callback.scope Scope to call the callback function in
 	 */
 	registerUserWithCloud: function(userData, callback) {
+        var Cloud = require('RebelFrame/Cloud');
+
 		return new Cloud({
 			url: '/user',
 			method: 'POST',
@@ -236,7 +240,9 @@ var Acl = {
 	 * @param {Object} callback.scope Scope to call the callback function in
 	 */
 	connectSocialMediaToUser: function(userData, callback) {
-		return new Cloud({
+		var Cloud = require('RebelFrame/Cloud');
+  
+        return new Cloud({
 			url: '/user/' + Acl.getLoggedinUser().id + '/connect',
 			method: 'POST',
 			data: userData,

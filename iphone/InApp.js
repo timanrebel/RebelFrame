@@ -240,15 +240,18 @@ function onRestoredCompletedTransactions(evt) {
 				Ti.API.error('Restored Receipt is Invalid.');
 			}
 		}
+
+		var verify = function(e) {
+			if (e.valid) {
+				markProductAsPurchased(e.productIdentifier);
+			} else {
+				Ti.API.error("Restored transaction is not valid");
+			}
+		};
+
 		for (var i = 0; i < evt.transactions.length; i++) {
 			if (!IOS7 && verifyingReceipts) {
-				Storekit.verifyReceipt(evt.transactions[i], function(e) {
-					if (e.valid) {
-						markProductAsPurchased(e.productIdentifier);
-					} else {
-						Ti.API.error("Restored transaction is not valid");
-					}
-				});
+				Storekit.verifyReceipt(evt.transactions[i], verify);
 			} else {
 				markProductAsPurchased(evt.transactions[i].productIdentifier);
 			}
