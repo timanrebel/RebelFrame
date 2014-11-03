@@ -82,7 +82,8 @@ var Framework = module.exports = _.extend({
 			_alloy_createModel = Alloy.createModel,
 			_alloy_createCollection = Alloy.createCollection,
 			_alloy_createWidget = Alloy.createWidget,
-			WM = require('RebelFrame/WindowManager');
+			WM = require('RebelFrame/WindowManager'),
+			Context = require('RebelFrame/Context');
 
 		/**
 		 * Adds openWin en closeWin functions to Alloy Controllers. This way it is easy to call $.openWin() and $.closeWin and are needed close eventlisteners automatically added and removed.
@@ -110,8 +111,13 @@ var Framework = module.exports = _.extend({
 					function onOpenWin(evt) {
 						this.removeEventListener('open', onOpenWin);
 
+						if(OS_ANDROID) {
+							Context.on(win.id, this.activity);
+						}
+
 						// If there is a onOpen callback, call it
-						config.onOpen(controller);
+						if(_.isFunction(config.onOpen))
+							config.onOpen(controller);
 					}
 
 					/**
@@ -121,6 +127,9 @@ var Framework = module.exports = _.extend({
 					 */
 					function onCloseWin(evt) {
 						this.removeEventListener('close', onCloseWin);
+
+						if(OS_ANDROID)
+							Context.off(win.activity);
 
 						// If there is a destruct function, call it.
 						if (_.isFunction(controller.destruct)) {
@@ -141,8 +150,7 @@ var Framework = module.exports = _.extend({
 							evt.source.keyboardPanning = false;
 					}
 
-					if(_.isFunction(config.onOpen))
-						win.addEventListener('open', onOpenWin);
+					win.addEventListener('open', onOpenWin);
 
 					win.addEventListener('close', onCloseWin);
 
