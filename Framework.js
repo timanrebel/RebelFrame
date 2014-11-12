@@ -63,12 +63,12 @@ var Framework = module.exports = _.extend({
 	 * @return {String} The status
 	 */
 	getStatus: function() {
-		Ti.API.error('stored status', Ti.App.Properties.getString(Ti.App.id + '.status'));
+		// Ti.API.error('stored status', Ti.App.Properties.getString(Ti.App.id + '.status'));
 
 		if (!_status)
 			_status = Ti.App.Properties.getString(Ti.App.id + '.status', Framework.LOGGEDOUT);
 
-		Ti.API.error('returned status', _status);
+		// Ti.API.error('returned status', _status);
 
 		return _status;
 	},
