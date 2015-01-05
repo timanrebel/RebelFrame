@@ -111,6 +111,9 @@ var WM = module.exports = {
 
 				win.addEventListener('open', onOpenTopWindow);
 				win.open();
+			} else if(win.topWindow) {
+				win.addEventListener('open', onOpenTopWindow);
+				win.open();
 			} else if(win.apiName == 'Ti.UI.TabGroup') {
 				win.addEventListener('open', onOpenTopWindow);
 				win.open();
