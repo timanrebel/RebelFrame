@@ -89,10 +89,13 @@ var WM = module.exports = {
 			// If window should be Modal Window
 			// Also add it to a new navigationGroup
 			else if (win.modalWin) {
-				var navWin = WM.createNewNavWindow(win);
-				navWin.open({
+				WM.createNewNavWindow(win).open({
 					modal: true
 				});
+			}
+			// If window should be part of NavigationGroup
+			else if (win.newNavGroup) {
+				WM.createNewNavWindow(win).open();
 			}
 			// If window should be part of NavigationGroup
 			else if (win.navGroup) {
