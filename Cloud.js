@@ -45,7 +45,9 @@ var Cloud = (function() {
 					data, query;
 
 				if (method == 'GET' || method == 'DELETE') {
-					if (query = toQueryString(config.data))
+					query = toQueryString(config.data);
+
+					if (query)
 						url = url + (url.indexOf('?') > 0 ? '&' : '?') + query;
 				} else
 					data = config.data || {};

@@ -3,12 +3,18 @@ var Alloy = require('alloy'),
 	Backbone = Alloy.Backbone;
 
 /**
+* {String} The status of this app (i.e. loggedout, loggedin, activated)
+* @private
+*/
+var _status;
+
+/**
  * @class Framework
  * @singleton
  *
  * RebelFrame's general functions, defined as singleton
  */
-var Framework = module.exports = {
+var Framework = module.exports = _.extend({
 	/**
 	 * @property {String} LOGGEDOUT User has installed App, but not yet loggedin
 	 */
@@ -38,8 +44,17 @@ var Framework = module.exports = {
 	 * @param {String} status The status to set
 	 */
 	setStatus: function(status) {
+		var oldStatus = _status;
 		_status = status;
+
+		// Persist new App Status
 		Ti.App.Properties.setString(Ti.App.id + '.status', status);
+
+		// Trigger event, so App can route based on new App Status
+		Framework.trigger('status', {
+			oldStatus: oldStatus,
+			newStatus: _status
+		});
 	},
 
 	/**
@@ -48,10 +63,14 @@ var Framework = module.exports = {
 	 * @return {String} The status
 	 */
 	getStatus: function() {
-		if (_status)
-			return _status;
+		// Ti.API.error('stored status', Ti.App.Properties.getString(Ti.App.id + '.status'));
 
-		return Ti.App.Properties.getString(Ti.App.id + '.status', Framework.LOGGEDOUT);
+		if (!_status)
+			_status = Ti.App.Properties.getString(Ti.App.id + '.status', Framework.LOGGEDOUT);
+
+		// Ti.API.error('returned status', _status);
+
+		return _status;
 	},
 
 	/**
@@ -63,7 +82,8 @@ var Framework = module.exports = {
 			_alloy_createModel = Alloy.createModel,
 			_alloy_createCollection = Alloy.createCollection,
 			_alloy_createWidget = Alloy.createWidget,
-			WM = require('RebelFrame/WindowManager');
+			WM = require('RebelFrame/WindowManager'),
+			Context = require('RebelFrame/Context');
 
 		/**
 		 * Adds openWin en closeWin functions to Alloy Controllers. This way it is easy to call $.openWin() and $.closeWin and are needed close eventlisteners automatically added and removed.
@@ -85,11 +105,20 @@ var Framework = module.exports = {
 					if (!_.isUndefined(config.showSideMenu))
 						win.showSideMenu = config.showSideMenu;
 					// When Controller is opened from the XML of a TabGroup, do nothing
-					else if (!_.isUndefined(config.tabGroup))
+					else if (!_.isUndefined(config.tabGroupRoot))
 						return;
 
-					// Open the window
-					WM.openWin(win);
+					function onOpenWin(evt) {
+						this.removeEventListener('open', onOpenWin);
+
+						if(OS_ANDROID) {
+							Context.on(win.id, this.activity);
+						}
+
+						// If there is a onOpen callback, call it
+						if(_.isFunction(config.onOpen))
+							config.onOpen(controller);
+					}
 
 					/**
 					 * Handle `close` event of Window. Removes eventlistener and calls both RebelFrame's destruct as Alloy's destroy functions.
@@ -99,19 +128,35 @@ var Framework = module.exports = {
 					function onCloseWin(evt) {
 						this.removeEventListener('close', onCloseWin);
 
-						if (controller.destruct) {
+						if(OS_ANDROID)
+							Context.off(win.activity);
+
+						// If there is a destruct function, call it.
+						if (_.isFunction(controller.destruct)) {
 							Ti.API.debug('destruct() called');
 							controller.destruct.call(controller, evt);
 						} else
 							Ti.API.warn('destruct() NOT called');
 
+						// Call Aloy's own destroy function
 						controller.destroy.call(controller, evt);
 
+						// If there is a onClose callback, call it
+						if(_.isFunction(config.onClose))
+							config.onClose(controller);
+
 						// Cleanup possible panning:
-						evt.source.keyboardPanning = false;
+						if(OS_IOS)
+							evt.source.keyboardPanning = false;
 					}
 
+					win.addEventListener('open', onOpenWin);
+
 					win.addEventListener('close', onCloseWin);
+
+					// Open the window
+					WM.openWin(win);
+
 				},
 
 				/**
@@ -206,13 +251,7 @@ var Framework = module.exports = {
 				Ti.API.error(' - ' + key + ': ' + type);
 		}
 	}
-};
-
-/**
- * {String} The status of this app (i.e. loggedout, loggedin, activated)
- * @private
- */
-var _status;
+}, Backbone.Events);
 
 // Create some basic globals that can be used in TSS
 Alloy.Globals.deviceHeight = Framework.deviceHeight;

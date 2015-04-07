@@ -20,7 +20,6 @@ var InApp = {
 
 		//  During development it is possible that the receipt does not exist.
 		//  This can be resolved by refreshing the receipt.
-
 		if (!Storekit.receiptExists) {
 			Ti.API.error('Receipt does not exist yet. Refreshing to get one.');
 			Storekit.refreshReceipt(null, function() {
@@ -76,7 +75,7 @@ var _successCallback;
  against the "Sandbox" or "Live" server. If you are verifying auto-renewable subscriptions then you need
  to set the shared secret for the application from your iTunes Connect account.
  */
-Storekit.receiptVerificationSandbox = true;//(Ti.App.deployType !== 'production');
+Storekit.receiptVerificationSandbox = (Ti.App.deployType !== 'production');
 Storekit.receiptVerificationSharedSecret = Alloy.CFG.storeKitReceiptVerificationSharedSecret;
 
 /*
@@ -91,7 +90,7 @@ Storekit.autoFinishTransactions = true;
  bundleVersion and bundleIdentifier must be set before calling validateReceipt().
  Do not pull these values from the app, they should be hard coded for security reasons.
  */
-Storekit.bundleVersion = '1.0.2';//Ti.App.version; // eg. "1.0.0"
+Storekit.bundleVersion = Ti.App.version; // eg. "1.0.0"
 Storekit.bundleIdentifier = Ti.App.id; // eg. "com.appc.storekit"
 
 /**
@@ -243,19 +242,20 @@ function onRestoredCompletedTransactions(evt) {
 				Ti.API.error('Restored Receipt is Invalid.');
 			}
 		}
-		if(evt.transactions) {
-			for (var i = 0; i < evt.transactions.length; i++) {
-				if (!IOS7 && verifyingReceipts) {
-					Storekit.verifyReceipt(evt.transactions[i], function(e) {
-						if (e.valid) {
-							markProductAsPurchased(e.productIdentifier);
-						} else {
-							Ti.API.error("Restored transaction is not valid");
-						}
-					});
-				} else {
-					markProductAsPurchased(evt.transactions[i].productIdentifier);
-				}
+
+		var verify = function(e) {
+			if (e.valid) {
+				markProductAsPurchased(e.productIdentifier);
+			} else {
+				Ti.API.error("Restored transaction is not valid");
+			}
+		};
+
+		for (var i = 0; i < evt.transactions.length; i++) {
+			if (!IOS7 && verifyingReceipts) {
+				Storekit.verifyReceipt(evt.transactions[i], verify);
+			} else {
+				markProductAsPurchased(evt.transactions[i].productIdentifier);
 			}
 			alert('Restored ' + evt.transactions.length + ' purchases!');
 		}

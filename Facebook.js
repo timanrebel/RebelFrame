@@ -42,7 +42,7 @@ var FB = {
 		});
 
 		// Make the call using the FB SDK
-		_authorize(callbackObj);
+		_authorize(options);
 	},
 
 	requestWriteAccess: function(callback) {

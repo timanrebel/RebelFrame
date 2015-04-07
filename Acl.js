@@ -41,6 +41,8 @@ var Acl = {
 	 * @param {Object} failure Callback object containing function (& scope); will be called upon error
 	 */
 	authenticateUserWithCloud: function(username, password, type, success, failure) {
+        var Cloud = require('RebelFrame/Cloud');
+
 		return new Cloud({
 			url: '/oauth/access_token',
 			method: 'POST',
@@ -174,22 +176,10 @@ var Acl = {
 		Ti.API.info('Removing logged in user id and cloud access token from properties', 'prop');
 		Ti.App.Properties.removeProperty('loggedinUserId');
 		Acl.setCloudAccessToken(null);
-		// keychain.deletePasswordForService('Collapp', 'cloudAccessToken');
 
-		// if (Acl.getLoggedinUser()) {
-		// 	if (Acl.getLoggedinUser().hasSocialNetwork('facebook')) {
-		// 		require('facebook').logout();
-		// 	}
-		// }
-
-		// Unregister for push notifications
-		// PushNotifications.unRegister();
-
-		// Reset Collapp state to logged out
-		F.setStatus(F.INSTALLED);
-
-		// Navigate to index controller and let it handle the rest
-		Alloy.createController('index');
+		// Reset App state to logged out
+		// Routing will handle the rest
+		F.setStatus(F.LOGGEDOUT);
 	},
 
 	/**
@@ -226,7 +216,7 @@ var Acl = {
 	 * @param {Object} callback.scope Scope to call the callback function in
 	 */
 	registerUserWithCloud: function(userData, callback) {
-		Ti.API.info(userData);
+        var Cloud = require('RebelFrame/Cloud');
 
 		return new Cloud({
 			url: '/user',
@@ -250,7 +240,9 @@ var Acl = {
 	 * @param {Object} callback.scope Scope to call the callback function in
 	 */
 	connectSocialMediaToUser: function(userData, callback) {
-		return new Cloud({
+		var Cloud = require('RebelFrame/Cloud');
+  
+        return new Cloud({
 			url: '/user/' + Acl.getLoggedinUser().id + '/connect',
 			method: 'POST',
 			data: userData,
@@ -268,8 +260,6 @@ var Acl = {
 	 * @param {Object} callback.scope Scope to call the callback function in
 	 */
 	onLoginSuccess: function(cloudResponse, callback) {
-		Ti.API.info(cloudResponse);
-
 		var cloudUser = cloudResponse.user;
 
 		if (cloudResponse.access_token) {

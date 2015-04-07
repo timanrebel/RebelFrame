@@ -1,6 +1,7 @@
 var Alloy = require('alloy'),
 	_ = Alloy._,
 	Backbone = Alloy.Backbone,
+	WM = require('RebelFrame/WindowManager'),
 	_navDrawerModule = require('com.tripvi.drawerlayout');
 
 var Android = module.exports = {
@@ -22,7 +23,7 @@ var Android = module.exports = {
 		_.each(_centerWin.children, function(view) {
 			_centerWin.remove(view);
 			_view.add(view);
-		})
+		});
 
 		_navDrawer = _navDrawerModule.createDrawer({
 			// set windows
@@ -46,7 +47,7 @@ var Android = module.exports = {
 		_centerWin.addEventListener('open', function(evt) {
 			this.activity.actionBar.onHomeIconItemSelected = function() {
 				_navDrawer.toggleLeftWindow();
-			}
+			};
 		});
 		_centerWin.open();
 	},

@@ -50,7 +50,7 @@ var Media = module.exports = {
 	 * @param {Array} acceptedMediaTypes (Optional) The accepted media formats
 	 */
 	newFromGallery: function(successCallback, acceptedMediaTypes) {
-		console.log('gallery');
+		Ti.API.info('gallery');
 
 		Ti.Media.openPhotoGallery({
 			success: successCallback,
@@ -76,8 +76,9 @@ var Media = module.exports = {
 	 * @return {Object} Compressed blob or file handle on Android
 	 */
 	prepareBlobForUpload: function(blob, options) {
-		var options = options || {},
-			maxSize = options.maxSize || 1280,
+		options = options || {};
+
+		var maxSize = options.maxSize || 1280,
 			width, height,
 			compressedBlob;
 
@@ -109,9 +110,8 @@ var Media = module.exports = {
 
 		if (OS_ANDROID) {
 			// Write to a temporary file to overcome out of memory problems
-			tmpFile = Ti.Filesystem.createTempFile();
+			var tmpFile = Ti.Filesystem.createTempFile();
 			tmpFile.write(compressedBlob);
-
 			return tmpFile;
 		} else
 			return compressedBlob;
@@ -145,7 +145,7 @@ var Media = module.exports = {
 function onUploadDialog(evt) {
 	this.removeEventListener('click', onUploadDialog);
 
-	console.log(evt);
+	Ti.API.info(evt);
 
 	if (evt.index === 0)
 		Media.newFromCamera(Media.callback);

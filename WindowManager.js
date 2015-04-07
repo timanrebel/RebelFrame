@@ -39,12 +39,14 @@ var WM = module.exports = {
 	openWinInActiveNavWindow: function(win) {
 		if (OS_IOS) {
 			if (!WM.navWindows.length) {
-				if(Alloy.Globals.tabGroup)
+				if (Alloy.Globals.tabGroup) {
 					Alloy.Globals.tabGroup.activeTab.open(win);
+
+					win.tabGroup = true;
+				}
 				else
 					WM.createNewNavWindow(win).open();
-			}
-			else
+			} else
 				_.last(WM.navWindows).openWindow(win);
 		} else
 			win.open();
@@ -87,10 +89,13 @@ var WM = module.exports = {
 			// If window should be Modal Window
 			// Also add it to a new navigationGroup
 			else if (win.modalWin) {
-				var navWin = WM.createNewNavWindow(win);
-				navWin.open({
+				WM.createNewNavWindow(win).open({
 					modal: true
 				});
+			}
+			// If window should be part of NavigationGroup
+			else if (win.newNavGroup) {
+				WM.createNewNavWindow(win).open();
 			}
 			// If window should be part of NavigationGroup
 			else if (win.navGroup) {
@@ -107,15 +112,16 @@ var WM = module.exports = {
 					centerWin: win
 				});
 
-				win.addEventListener('open', onOpenMenuWindow);
-
+				win.addEventListener('open', onOpenTopWindow);
 				win.open();
-			} else if(win.isTopWin) {
+			} else if(win.topWindow) {
+				win.addEventListener('open', onOpenTopWindow);
 				win.open();
-			}
-			else {
+			} else if(win.apiName == 'Ti.UI.TabGroup') {
+				win.addEventListener('open', onOpenTopWindow);
+				win.open();
+			} else {
 				win.addEventListener('open', onOpenSubWindow);
-
 				win.open();
 			}
 		} else
@@ -152,11 +158,13 @@ var WM = module.exports = {
 
 				WM.closeWin(navWin);
 			// If Window is part of tabGroup, close via TabGroup
-			} else if(Alloy.Globals.tabGroup)
-				Alloy.Globals.tabGroup.close(win);
+			} else if (win.tabGroup) {
+				Alloy.Globals.tabGroup.activeTab.close(win);
+			}
 			// Else just close the Window
-			else
+			else {
 				win.close();
+			}
 		} else
 			win.close();
 	},
@@ -175,27 +183,27 @@ var WM = module.exports = {
 	 * @param {String} name Name of Stack to close
 	 */
 	killStack: function(name) {
-		if (_windowStacks[name])
+		if (_windowStacks[name]) {
 			_.each(_windowStacks[name], function(win) {
-				console.log('Closing ' + win);
-				// WM.closeWin(win);
-				win.close();
+				Ti.API.info('Closing ' + name + ' ' + win.id);
+				WM.closeWin(win);
 			});
+		}
 	},
 
 	destruct: function() {
-		_.each(WM.navWindows,function(win) {
+		_.each(WM.navWindows, function(win) {
 			WM.closeWin(win);
 		});
 
-		if(Alloy.Globals.tabGroup) {
+		if (Alloy.Globals.tabGroup) {
 			Alloy.Globals.tabGroup.close();
 
 			delete Alloy.Globals.tabGroup;
 		}
 
-		if(_navDrawer) {
-			if(_navDrawer.destruct)
+		if (_navDrawer) {
+			if (_navDrawer.destruct)
 				_navDrawer.destruct();
 
 			_navDrawer = null;
@@ -209,7 +217,7 @@ _.extend(WM, Backbone.Events);
 /**
  * @property {Object} _windowStacks Dictionary of stacks of Windows. Each element contains an array of one or more windows
  */
-_windowStacks = {};
+var _windowStacks = {};
 
 /**
  * Add given Window to stack with given name
@@ -233,25 +241,30 @@ if (OS_ANDROID) {
 	 *
 	 * @param {Object} evt Event details
 	 */
-	function onOpenSubWindow(evt) {
+	var onOpenSubWindow = function(evt) {
 		var win = this;
 
 		if (this.activity) {
 			//Setup the ActionBar for 1> level windows
 			var actionBar = this.activity.actionBar;
-			if (actionBar && !this.navBarHidden) {
-				actionBar.displayHomeAsUp = true;
-				actionBar.icon = '/images/generic/logoTransparentSmall.png';
-				actionBar.onHomeIconItemSelected = function() {
-					win.close();
-				};
+			if (actionBar) {
+				if(!this.navBarHidden) {
+					actionBar.displayHomeAsUp = true;
+					actionBar.icon = '/images/generic/logoTransparentSmall.png';
+					actionBar.onHomeIconItemSelected = function() {
+						win.close();
+					};
+				}
+				else {
+					actionBar.hide();
+				}
 			}
 
-			this.activity.onPrepareOptionsMenu = createOptionsMenu;
-
-			this.activity.invalidateOptionsMenu();
+			// this.activity.onPrepareOptionsMenu = createOptionsMenu;
+			//
+			// this.activity.invalidateOptionsMenu();
 		}
-	}
+	};
 
 	/**
 	 * On Android: Handle open event of Top window. It opens the NavigationDrawer
@@ -259,32 +272,37 @@ if (OS_ANDROID) {
 	 *
 	 * @param {Object} evt Event details
 	 */
-	function onOpenMenuWindow(evt) {
+	var onOpenTopWindow = function(evt) {
 		if (this.activity) {
 			//Setup ActionBar for level 1 windows
 			var actionBar = this.activity.actionBar;
-			if (actionBar && !this.navBarHidden) {
-				actionBar.displayHomeAsUp = false;
-				actionBar.icon = '/images/generic/hamburger.png';
+			if (actionBar) {
+				if(!this.navBarHidden) {
+					actionBar.displayHomeAsUp = false;
+					actionBar.icon = '/images/generic/hamburger.png';
 
-				actionBar.onHomeIconItemSelected = function() {
-					if (_navDrawer) {
-						_navDrawer.toggleDrawer();
-					}
-				};
+					actionBar.onHomeIconItemSelected = function() {
+						if (_navDrawer) {
+							_navDrawer.toggleDrawer();
+						}
+					};
+				}
+				else {
+					actionBar.hide();
+				}
 			}
 
 			// Close app when clicking back button
 			this.addEventListener('androidback', onBackButtonClick);
 
-			this.activity.onPrepareOptionsMenu = createOptionsMenu;
-
-			this.activity.invalidateOptionsMenu();
+			// this.activity.onPrepareOptionsMenu = createOptionsMenu;
+			//
+			// this.activity.invalidateOptionsMenu();
 		}
-	}
+	};
 
-	function onBackButtonClick(evt) {
-		this.removeEventListener('androidback', onBackButtonClick);
+	var onBackButtonClick = function(evt) {
+		// this.removeEventListener('androidback', onBackButtonClick);
 
 		// Go back to home
 		// Ti.Android.currentActivity.finish();
@@ -293,9 +311,9 @@ if (OS_ANDROID) {
 		});
 		intent.addCategory(Ti.Android.CATEGORY_HOME);
 		Ti.Android.currentActivity.startActivity(intent);
-	}
+	};
 
-	function createOptionsMenu(evt) {
+	var createOptionsMenu = function(evt) {
 		var menu = evt.menu,
 			menuItem;
 
@@ -322,24 +340,24 @@ if (OS_ANDROID) {
 		// }
 
 		// Help
-		if (!menu.findItem(999)) {
-			menuItem = menu.add({
-				itemId: 999,
-				title: L('Help'),
-				showAsAction: Ti.Android.SHOW_AS_ACTION_NEVER,
-				order: 999
-			});
-			menuItem.addEventListener('click', onOpenHelp);
-		}
+		// if (!menu.findItem(999)) {
+		// 	menuItem = menu.add({
+		// 		itemId: 999,
+		// 		title: L('Help'),
+		// 		showAsAction: Ti.Android.SHOW_AS_ACTION_NEVER,
+		// 		order: 999
+		// 	});
+		// 	menuItem.addEventListener('click', onOpenHelp);
+		// }
 
 		// this.invalidateOptionsMenu();
-	}
+	};
 
-	function onOpenSettings() {
+	var onOpenSettings = function() {
 		Alloy.createController('Settings');
-	}
+	};
 
-	function onOpenHelp() {
+	var onOpenHelp = function() {
 		var Acl = require('Acl'),
 			emailDialog = Ti.UI.createEmailDialog();
 
@@ -361,13 +379,15 @@ if (OS_ANDROID) {
 
 		emailDialog.messageBody = message;
 		emailDialog.open();
-	}
+	};
 }
 /**
  * @property {Ti.UI.Window} _navDrawer The Navigation Drawer window
  * @private
  */
-_navDrawer = null;
+var _navDrawer,
+
+	_centerWin;
 
 /**
  * Setup Navigation Drawer module
