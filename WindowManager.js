@@ -107,10 +107,13 @@ var WM = module.exports = {
 					centerWin: win
 				});
 
-				win.addEventListener('open', onOpenTopWindow);
+				win.addEventListener('open', onOpenMenuWindow);
 
 				win.open();
-			} else {
+			} else if(win.isTopWin) {
+				win.open();
+			}
+			else {
 				win.addEventListener('open', onOpenSubWindow);
 
 				win.open();
@@ -256,7 +259,7 @@ if (OS_ANDROID) {
 	 *
 	 * @param {Object} evt Event details
 	 */
-	function onOpenTopWindow(evt) {
+	function onOpenMenuWindow(evt) {
 		if (this.activity) {
 			//Setup ActionBar for level 1 windows
 			var actionBar = this.activity.actionBar;
