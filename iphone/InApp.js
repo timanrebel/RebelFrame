@@ -11,25 +11,25 @@ var Alloy = require('alloy'),
  */
 var InApp = {
 	getReceipt: function(callback) {
-		// function validate() {
-		// 	Ti.API.error('Validating receipt.');
-		// 	Ti.API.error('Receipt is Valid: ' + Storekit.validateReceipt());
+		function validate() {
+			Ti.API.error('Validating receipt.');
+			Ti.API.error('Receipt is Valid: ' + Storekit.validateReceipt());
 
-		// 	callback(Storekit.receipt);
-		// }
+			callback(Storekit.receipt);
+		}
 
 		//  During development it is possible that the receipt does not exist.
 		//  This can be resolved by refreshing the receipt.
 
-		// if (!Storekit.receiptExists) {
-		// 	Ti.API.error('Receipt does not exist yet. Refreshing to get one.');
-		// 	Storekit.refreshReceipt(null, function() {
-		// 		validate();
-		// 	});
-		// } else {
-		// 	Ti.API.error('Receipt does exist.');
-		// 	validate();
-		// }
+		if (!Storekit.receiptExists) {
+			Ti.API.error('Receipt does not exist yet. Refreshing to get one.');
+			Storekit.refreshReceipt(null, function() {
+				validate();
+			});
+		} else {
+			Ti.API.error('Receipt does exist.');
+			validate();
+		}
 	},
 
 	purchase: function(product, callback) {
@@ -40,9 +40,9 @@ var InApp = {
 		// }
 		Storekit.purchase({
 			product: product,
-			// applicationUsername is a opaque identifier for the user’s account on your system. 
+			// applicationUsername is a opaque identifier for the user’s account on your system.
 			// Used by Apple to detect irregular activity. Should hash the username before setting.
-			applicationUsername: Ti.Utils.sha1(Acl.getLoggedinUser().id + Acl.salt)
+			applicationUsername: Acl.isLoggedin() ? Ti.Utils.sha1(Acl.getLoggedinUser().id + Acl.salt) : null
 		});
 	},
 
@@ -54,7 +54,9 @@ var InApp = {
 		});
 	},
 
-	restore: function() {
+	restore: function(callback) {
+		_successCallback = callback;
+		
 		Storekit.restoreCompletedTransactions();
 	},
 
@@ -74,14 +76,14 @@ var _successCallback;
  against the "Sandbox" or "Live" server. If you are verifying auto-renewable subscriptions then you need
  to set the shared secret for the application from your iTunes Connect account.
  */
-Storekit.receiptVerificationSandbox = (Ti.App.deployType !== 'production');
+Storekit.receiptVerificationSandbox = true;//(Ti.App.deployType !== 'production');
 Storekit.receiptVerificationSharedSecret = Alloy.CFG.storeKitReceiptVerificationSharedSecret;
 
 /*
  autoFinishTransactions must be disabled (false) in order to start Apple hosted downloads.
  If autoFinishTransactions is disabled, it is up to you to finish the transactions.
  Transactions must be finished! Failing to finish transactions will cause your app to run slowly.
- Finishing a transaction at any time before its associated download is complete will cancel the download. 
+ Finishing a transaction at any time before its associated download is complete will cancel the download.
  */
 Storekit.autoFinishTransactions = true;
 
@@ -89,7 +91,7 @@ Storekit.autoFinishTransactions = true;
  bundleVersion and bundleIdentifier must be set before calling validateReceipt().
  Do not pull these values from the app, they should be hard coded for security reasons.
  */
-Storekit.bundleVersion = Ti.App.version; // eg. "1.0.0"
+Storekit.bundleVersion = '1.0.2';//Ti.App.version; // eg. "1.0.0"
 Storekit.bundleIdentifier = Ti.App.id; // eg. "com.appc.storekit"
 
 /**
@@ -241,21 +243,42 @@ function onRestoredCompletedTransactions(evt) {
 				Ti.API.error('Restored Receipt is Invalid.');
 			}
 		}
-		for (var i = 0; i < evt.transactions.length; i++) {
-			if (!IOS7 && verifyingReceipts) {
-				Storekit.verifyReceipt(evt.transactions[i], function(e) {
-					if (e.valid) {
-						markProductAsPurchased(e.productIdentifier);
-					} else {
-						Ti.API.error("Restored transaction is not valid");
-					}
-				});
-			} else {
-				markProductAsPurchased(evt.transactions[i].productIdentifier);
+		if(evt.transactions) {
+			for (var i = 0; i < evt.transactions.length; i++) {
+				if (!IOS7 && verifyingReceipts) {
+					Storekit.verifyReceipt(evt.transactions[i], function(e) {
+						if (e.valid) {
+							markProductAsPurchased(e.productIdentifier);
+						} else {
+							Ti.API.error("Restored transaction is not valid");
+						}
+					});
+				} else {
+					markProductAsPurchased(evt.transactions[i].productIdentifier);
+				}
 			}
+			alert('Restored ' + evt.transactions.length + ' purchases!');
 		}
-		alert('Restored ' + evt.transactions.length + ' purchases!');
 	}
 }
+
+/**
+ * Tells us if the version of iOS we are running on is iOS 7 or later
+ */
+function isIOS7Plus() {
+	if (Titanium.Platform.name == 'iPhone OS') {
+		var version = Titanium.Platform.version.split(".");
+		var major = parseInt(version[0], 10);
+
+		// can only test this support on a 3.2+ device
+		if (major >= 7) {
+			return true;
+		}
+	}
+	return false;
+
+}
+
+var IOS7 = isIOS7Plus();
 
 module.exports = InApp;
