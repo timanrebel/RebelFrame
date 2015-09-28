@@ -250,7 +250,27 @@ var Framework = module.exports = _.extend({
 			else
 				Ti.API.error(' - ' + key + ': ' + type);
 		}
-	}
+	},
+
+	iosVersion: function(asArray) {
+        if(!OS_IOS)
+            return false;
+
+        var version = Ti.Platform.version.split(".");
+
+        if(asArray)
+            return version;
+
+        var asFloat = parseInt(version[0]);
+
+        if(version[1])
+            asFloat += parseInt(version[1])/10;
+
+        if(version[2])
+            asFloat += parseInt(version[2])/100;
+
+        return asFloat;
+    }
 }, Backbone.Events);
 
 // Create some basic globals that can be used in TSS
