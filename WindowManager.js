@@ -106,6 +106,10 @@ var WM = module.exports = {
 				win.open();
 		} else if (OS_ANDROID) {
 
+			if(win.facebook) {
+				win.fbProxy = require('facebook').createActivityWorker({lifecycleContainer: win});
+			}
+
 			if (win.showSideMenu) {
 				// Create SideMenu if not yet created.
 				setupNavDrawer({
