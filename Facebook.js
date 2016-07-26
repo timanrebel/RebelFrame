@@ -114,6 +114,8 @@ function _authorize(options) {
 
 	fbSDK.forceDialogAuth = false;
 
+
+
 	if (OS_IOS)
 		fbSDK.initialize();
 
@@ -124,6 +126,8 @@ function _authorize(options) {
 		callbackWrapper({success: true});
 
 	} else {
+		// fix for facbeook login on device, logout first before authorizing
+		fbSDK.logout();
 		fbSDK.authorize();
 	}
 }
